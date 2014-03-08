@@ -228,7 +228,7 @@ void Set_Background(){
 	// Set background 1 options.
 	REG_BG1CNT = BG_CBB(1) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;			// menu layer
 	REG_BG1HOFS = 0;
-	REG_BG1VOFS = 8;
+	REG_BG1VOFS = 4;
 	
 	// Set background 0 options.
 	REG_BG0CNT = BG_CBB(0) | BG_SBB(31) | BG_8BPP | BG_REG_32x32;			// text layer

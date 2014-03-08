@@ -1,0 +1,32 @@
+[1mdiff --git a/cascara.cpp b/cascara.cpp[m
+[1mindex 1bde392..dd46b3c 100644[m
+[1m--- a/cascara.cpp[m
+[1m+++ b/cascara.cpp[m
+[36m@@ -228,7 +228,7 @@[m [mvoid Set_Background(){[m
+ 	// Set background 1 options.[m
+ 	REG_BG1CNT = BG_CBB(1) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;			// menu layer[m
+ 	REG_BG1HOFS = 0;[m
+[31m-	REG_BG1VOFS = 8;[m
+[32m+[m	[32mREG_BG1VOFS = 4;[m
+ 	[m
+ 	// Set background 0 options.[m
+ 	REG_BG0CNT = BG_CBB(0) | BG_SBB(31) | BG_8BPP | BG_REG_32x32;			// text layer[m
+[1mdiff --git a/depend.mk b/depend.mk[m
+[1mindex fa79a1a..cfd6d75 100644[m
+[1m--- a/depend.mk[m
+[1m+++ b/depend.mk[m
+[36m@@ -1,7 +1,7 @@[m
+[31m-cascara.o: cascara.cpp cascara.h gba.h gbaextend.h[m
+[31m-font.o: font.cpp font.h[m
+[31m-gba.o: gba.cpp gba.h[m
+[31m-gbaextend.o: gbaextend.cpp gbaextend.h gba.h[m
+[31m-main.o: main.cpp gba.h font.h cascara.h gbaextend.h[m
+[31m-oldFunctions.o: oldFunctions.cpp[m
+[31m-screenblocks.o: screenblocks.cpp cascara.h gba.h gbaextend.h[m
+[32m+[m[32mcascara.o: cascara.cpp cascara.h gba.h gbaextend.h[m[41m[m
+[32m+[m[32mfont.o: font.cpp font.h[m[41m[m
+[32m+[m[32mgba.o: gba.cpp gba.h[m[41m[m
+[32m+[m[32mgbaextend.o: gbaextend.cpp gbaextend.h gba.h[m[41m[m
+[32m+[m[32mmain.o: main.cpp gba.h font.h cascara.h gbaextend.h[m[41m[m
+[32m+[m[32moldFunctions.o: oldFunctions.cpp[m[41m[m
+[32m+[m[32mscreenblocks.o: screenblocks.cpp cascara.h gba.h gbaextend.h[m[41m[m
