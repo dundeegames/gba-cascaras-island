@@ -274,4 +274,118 @@ void Set_Background(){
 
 } // end of Set_Background
 
+
+// ----------------------------------------------------------------------------
+
+void Play_Intro(){			// Play logo and sets menu
+
+    int BG3X_offset=0;		// holds value for reading REG_BG(X)HOFS, which are write only
+	int BG2Y_offset=0;		// holds value for reading REG_BG(X)VOFS, which are write only
+	int BG1Y_offset=0;		
+	
+	int frameCounter = 0;
+	bool showGameName = true;
+	
+	enum stage {start, studioRise, studioPause, studioFade, fadePause, gameRise, gamePause, gameFade, end};
+	stage logoStage = start;
+	
+	LoadTileData(4, 0, logoTiles, sizeof logoTiles);
+	
+	ClearObjects();
+	
+	for (int i = 0; i < 256; i++) {
+		SetPaletteObj(i, 0x6F37);
+	}
+
+	
+	while (true){
+	
+		frameCounter++;
+	
+		if((logoStage == start) && (frameCounter > 120)){
+			SetObject(0,												// create better way to change(animate) tiles for object 
+			  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
+			  ATTR1_SIZE(3) | ATTR1_X(56),
+			  ATTR2_ID8(0));
+			  
+			SetObject(1,
+			  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
+			  ATTR1_SIZE(3) | ATTR1_X(120),
+			  ATTR2_ID8(8));
+	  
+			logoStage = studioRise;
+		}
+
+		else if((logoStage == studioRise) && (!(frameCounter%5))){
+		
+			if (Rise_PaletteObj(logoPal)){
+				frameCounter = 0;
+				logoStage = studioPause;
+			}
+		}
+		
+		else if((logoStage == studioPause) && (frameCounter > 120)){
+			logoStage = studioFade;
+		}
+
+		
+		else if((logoStage == studioFade) && (!(frameCounter%5))){
+		
+			if (Fade_PaletteObj()){
+				SetObject(0,
+				  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
+				  ATTR1_SIZE(3) | ATTR1_X(56),
+				  ATTR2_ID8(128));
+				  
+				SetObject(1,
+				  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
+				  ATTR1_SIZE(3) | ATTR1_X(120),
+				  ATTR2_ID8(136));
+				
+				frameCounter = 0;
+				logoStage = fadePause;
+			}
+		}
+
+		else if((logoStage == fadePause) && (frameCounter > 120)){
+			logoStage = gameRise;
+		}
+		
+		else if((logoStage == gameRise) && (!(frameCounter%7))){
+		
+			if (Rise_PaletteObj(logoPal)){
+				frameCounter = 0;
+				logoStage = gamePause;
+			}
+		}
+
+		
+		else if((logoStage == gamePause) && (frameCounter > 120)){
+			logoStage = gameFade;
+		}
+
+		else if((logoStage == gameFade) && (!(frameCounter%5))){
+		
+			if (Fade_PaletteObj()){
+				frameCounter = 0;
+				logoStage = start;				// change to end
+			}
+		}
+		
+		else if (())
+	
+		WaitVSync();
+		
+		UpdateObjects();
+		
+		if (!(frameCounter%3)){
+		BG3X_offset += 1;
+		REG_BG3HOFS = BG3X_offset;
+		}
+	}
+
+
+}
+
+
 // MENU ============================================================================================

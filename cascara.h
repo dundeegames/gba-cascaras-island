@@ -156,7 +156,7 @@ void Set_Background();
 // The entry point for the game
 void Game();
 
-
+void Play_Intro();
 // ------------------------------------------------------------------
 
 #endif
