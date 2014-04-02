@@ -27,7 +27,8 @@ OBJECTS = \
 	charblock1.o \
 	sprite.o \
 	screenblocks.o \
-	gbaextend.o
+	gbaextend.o \
+  globals.o
 
 # The default target to make if none is specified.
 all: $(TARGET).gba

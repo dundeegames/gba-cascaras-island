@@ -49,7 +49,12 @@ extern const uint16_t menuSB[1024];
 
 // GLOBAL VARIABLE --------------------------------------------------
 
+extern int BG3X_offset;				// holds value for reading REG_BG(X)HOFS, which are write only
 
+extern int BG2X_offset;
+
+extern int BG2Y_offset;				// holds value for reading REG_BG(X)VOFS, which are write only
+extern int BG1Y_offset;
 
 
 // CLASS PROTOTYPES -------------------------------------------------
