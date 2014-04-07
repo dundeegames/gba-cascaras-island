@@ -36,7 +36,7 @@ void DrawText(int x, int y, const char string[]){
 */
 
 
-// STEFANOS'S TEXT =================================================================================
+// STEFANO'S TEXT =================================================================================
 
 void LoadCompressedText(){				// works only in | BG_4BPP |
 
@@ -167,4 +167,61 @@ void StartGame()
 
 */
 
+// ------------------------------------------------------------------------------------------------------
 
+/*
+void Menu() {
+
+	LoadPaletteBG(spritePalette);
+
+	bool inMenu = true;
+	
+	while (inMenu) {
+
+		bool startSelect = true;				// draw first screen with START selected
+		Set_Background();
+		Draw_Logo();
+		CopyScreen();
+			
+	
+		while(true) {
+		
+			FlipBuffers();
+			
+			if (startSelect) {
+				Draw_Button(25, 100, 1, "  START");
+				Draw_Button(135, 100, 0, "  RULES");
+			}
+			else {
+				Draw_Button(25, 100, 0, "  START");
+				Draw_Button(135, 100, 1, "  RULES");
+			}
+		
+			
+		
+			// Check user input
+			if (Button_Pressed(KEY_RIGHT) && startSelect) {
+				 startSelect = !startSelect;
+			}
+			
+			if (Button_Pressed(KEY_LEFT) && !startSelect) {
+				startSelect = !startSelect;
+			}
+		
+			if (Button_Pressed(KEY_START) && startSelect) {
+				inMenu = false;
+				break;
+			}
+			
+			if (Button_Pressed(KEY_START) && !startSelect) {
+				Rules();
+				break;
+			}
+		
+		}
+		
+	}
+
+}
+
+*/

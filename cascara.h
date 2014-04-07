@@ -62,6 +62,7 @@ extern int BG2X_offset;
 extern int BG2Y_offset;				// holds value for reading REG_BG(X)VOFS, which are write only
 extern int BG1Y_offset;
 
+extern int frameCounter;
 
 // CLASS PROTOTYPES -------------------------------------------------
 
@@ -124,23 +125,21 @@ class bullet {
 
 // FONT --------------
 
-// Draw ASCII character (c) at (x,y) coordinates in colour (colour)
-//void Draw_Char(int x, int y, int colour, char c);
+void DrawText(int x, int y, int colour, const char string[]);
 
-// Draw \0-terminated string (s) at position (x,y) in colour (colour)
-//void Draw_String(int x, int y, int colour, const char *s);
+void ClearText(int x, int y, const char string[]);
 
-void DrawText(int x, int y, const char string[]);
+void DrawButton(int x, int y, bool select, const char string[]);
 
+void ClearButton(int x, int y, const char string[]);
 
-
-// BUTTONS -----------
+// KEYS -----------
 
 // check if desired button was pressed
-bool Button_Pressed(int KEY);
+bool Key_Pressed(int KEY);
 
 // check if desired button was just pressed
-bool Button_JustPressed(int KEY, uint16_t &oldButtons);
+bool Key_JustPressed(int KEY, uint16_t &oldButtons);
 
 
 // COLOUR PALETTE ------------
@@ -166,7 +165,7 @@ void Set_Background();
 void Play_Intro();
 
 // The entry point for the game
-void Game();
+void Play_Game();
 
 // ------------------------------------------------------------------
 

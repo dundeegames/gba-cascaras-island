@@ -16,13 +16,27 @@
 
 // TEXT ============================================================================================
 
-
-void DrawText(int x, int y, const char string[]){
+// 	values for colour (0-15):
+//	0-white, 1-yellow, 2-green, 3-red, 4-cyan, 5-blue, 6-pink,
+//	14-black, 15-brown
+void DrawText(int x, int y, int colour, const char string[]){
 
 	int i = 0;
 	
 	while(string[i] != '\0'){
-		SetTile(31, (x+i), y, string[i]);
+		SetTile(31, (x+i), y, string[i] | (colour << 12));
+		i++;
+	}
+}
+
+// ---------------------------------------------------------
+
+void ClearText(int x, int y, const char string[]){
+
+	int i = 0;
+	
+	while(string[i] != '\0'){
+		SetTile(31, (x+i), y, 0);
 		i++;
 	}
 }
@@ -67,6 +81,27 @@ void DrawButton(int x, int y, bool select, const char string[]){
 	}
 }
 
+// ---------------------------------------------------------
+
+void ClearButton(int x, int y, const char string[]){
+	
+	int i = 0;
+	
+	SetTile(30, x-1, y, 0);
+	SetTile(30, x-1, y+1, 0);
+
+	while(string[i] != '\0'){
+
+		SetTile(31, (x+i), y, 0);
+		SetTile(30, (x+i), y, 0);
+		SetTile(30, (x+i), y+1, 0);
+
+		i++;
+	}
+
+	SetTile(30, (x+i), y, 0);
+	SetTile(30, (x+i), y+1, 0);
+}
 
 // KEYS =========================================================================================
 
@@ -316,13 +351,15 @@ void Set_Background(){
 
 // ----------------------------------------------------------------------------
 
+
 void Play_Intro(){			// Play logo and sets menu
 
-	int frameCounter = 0;
 	bool inLoop = true;
-	int planeX = 480;		// holds Xcoord for fake plane
+	bool startSelect = true;	// draw first screen with START selected
 	
-	enum stage {start, studioRise, studioPause, studioFade, fadePause, gameRise, gamePause, gameFade, menuSlide, planeSlide, buttons, end};
+	int planeX = 480;			// holds Xcoord for fake plane
+	
+	enum stage {start, studioRise, studioPause, studioFade, fadePause, gameRise, gamePause, gameFade, menuSlide, planeSlide, buttons, about, end};
 	stage logoStage = start;
 	
 	LoadTileData(4, 0, logoTiles, sizeof logoTiles);
@@ -475,9 +512,6 @@ void Play_Intro(){			// Play logo and sets menu
 					else{
 					
 						LoadCompressedText();
-					/*	for (int i = 0; i < 128; i++){			// Load Bold Font into charblock 0
-							LoadTile8(0, i, font_bold[i]);	
-						}*/
 
 						logoStage = buttons;
 					}					
@@ -485,16 +519,69 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case buttons:
-				DrawButton(8, 13, true, "START");
-				DrawButton(17, 13, false, "ABOUT");
+				DrawText(9, 7, 15, "Choose from");
+				DrawText(6, 9, 15, "following options");
 				
+				if (startSelect) {
+					DrawButton(8, 13, true, "START");
+					DrawButton(17, 13, false, "ABOUT");
+				}
+				else {
+					DrawButton(8, 13, false, "START");
+					DrawButton(17, 13, true, "ABOUT");
+				}
+
+				// Check user input
+				if (Key_Pressed(KEY_RIGHT) && startSelect){
+					 startSelect = !startSelect;
+				}
 				
+				else if (Key_Pressed(KEY_LEFT) && !startSelect){
+					startSelect = !startSelect;
+				}
+			
+				if (Key_Pressed(KEY_START)){
+					ClearText(9, 7, "Choose from");
+					ClearText(6, 9, "following options");
+				
+					ClearButton(8, 13, "START");
+					ClearButton(17, 13, "ABOUT");
+					
+					if(startSelect){
+						logoStage = end;
+					}
+					else{
+						logoStage = about;
+					}
+				}			
+				break;
+				
+			case about:
+				DrawText(6, 4, 5, "Created by Jiri Klic");
+				DrawText(6, 6, 5, "@ Abertay, April 2014");
+				DrawText(6, 10, 15, "Press SELECT to return");
+				
+				DrawButton(12, 13, false, "SELECT");
+				
+				// Check user input
+				if (Key_Pressed(KEY_SELECT)){
+					DrawButton(12, 13, true, "SELECT");
+					Slow_Time(12);									// wait for MAX/60 seconds
+				
+					ClearText(6, 4, "Created by Jiri Klic");
+					ClearText(6, 6, "@ Abertay, April 2014");
+					ClearText(6, 10, "Press SELECT to return");
+					
+					ClearButton(12, 13, "SELECT");
+					
+					startSelect = true;
+					
+					logoStage = buttons;
+				}
 				break;
 				
 			case end:
-				if(!(frameCounter%5)){
-
-				}
+				inLoop = false;
 				break;
 						
 		}
@@ -513,4 +600,86 @@ void Play_Intro(){			// Play logo and sets menu
 }
 
 
-// MENU ============================================================================================
+// GAME ============================================================================================
+
+void Play_Game(){
+
+	int PlayerX = 8;
+	int PlayerY = 32;
+	
+	int EnemyX = 250;
+	int EnemyY = 32;
+
+	REG_BG0VOFS = 4;	
+	DrawText(1, 1, 0, "SCORE: 9999");
+	DrawText(15, 1, 0, "TIME: 00:00:00");
+	DrawText(1, 19, 0, "LIFE: 100");
+	DrawText(15, 19, 0, "SKILL:   1/100");
+
+	SetObject(0,
+	  ATTR0_SHAPE(1) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(PlayerY),
+	  ATTR1_SIZE(2) | ATTR1_X(PlayerX),
+	  ATTR2_ID8(0));
+
+	SetObject(1,
+	  ATTR0_SHAPE(1) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(EnemyY),
+	  ATTR1_SIZE(1) | ATTR1_X(EnemyX),
+	  ATTR2_ID8(72));
+
+	while(true){
+	
+		frameCounter++;
+		
+		// Check user input
+		if (Key_Pressed(KEY_UP)) {
+			if(PlayerY > 24){
+				PlayerY--;
+				SetObjectY(0, PlayerY);
+			}
+		}
+		
+		if (Key_Pressed(KEY_DOWN)) {
+			if(PlayerY < 108){
+				PlayerY++;
+				SetObjectY(0, PlayerY);
+			}
+		}
+		
+		if (Key_Pressed(KEY_LEFT)) {
+			if(PlayerX > 8){
+				PlayerX--;
+				SetObjectX(0, PlayerX);
+			}
+		}
+
+		if (Key_Pressed(KEY_RIGHT)) {
+			if(PlayerX < 200){
+				PlayerX++;
+				SetObjectX(0, PlayerX);
+			}
+		}
+		
+		// Update enemy
+		EnemyX--;
+		if(EnemyX < 0){
+			EnemyX += 512;
+		}
+		if((EnemyX > 400) && (EnemyX < 480)){
+			EnemyY = ((frameCounter%84)+24);
+			SetObjectY(1, EnemyY);
+			EnemyX = 250;
+		}
+		SetObjectX(1, EnemyX);
+		
+		WaitVSync();
+				
+		UpdateObjects();
+		
+		if (!(frameCounter%3)){
+			BG3X_offset += 1;
+			REG_BG3HOFS = BG3X_offset;
+		}
+	}
+
+
+}

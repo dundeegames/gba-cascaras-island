@@ -55,7 +55,7 @@ static inline int MoveTile(int screenblock1, int x1, int y1, int screenblock2, i
 	REG_VIDEO_BASE[(screenblock1 * 1024) + (y1 * 32) + x1] = 0;
 }
 
-// Custom function to overwrite artefat pixels on bottom menu
+// Custom function to overwrite artefact pixels on bottom menu
 static inline void FixTile8(int charblock, int tile_num)
 {
 	volatile uint16_t *dest = REG_VIDEO_BASE + (charblock * 8192) + (tile_num * 32);

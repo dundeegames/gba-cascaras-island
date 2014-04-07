@@ -13,52 +13,22 @@ int main() {
 
 	Set_Background();
 
-	// Player:
-	int playerX = 19;
-	int playerY = 19;
-	
-// ----------------------------------------------------------------------------	
+// ------------------------------------------------
 
 	Play_Intro();
 
-	//Game();
+	Play_Game();
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------
 	
-
-
-	
-
-	//LoadPaletteObj(logoPal);
-	
-
-	  
-	//LoadTileData(4, 0, spriteTiles, sizeof spriteTiles);
-	
-	ClearObjects();
-
-// ----------------------------------------------------------------------------
-
-
 	return 0;
 }
+
+
+
  
 /* JIRI'S NOTES ===================================
 
-
-
-
-
-	SetObject(0,
-	          ATTR0_SHAPE(1) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(playerY),
-			  ATTR1_SIZE(2) | ATTR1_X(playerX),
-			  ATTR2_ID8(0));
-	
-	DrawText(5, 5, "hello, world!");
-	DrawText(10, 7, "how is it going?");
-	DrawText(15, 9, "I'm fine.");
-
-	
 	
 		if (Button_Pressed(KEY_RIGHT)) {
 		
