@@ -28,8 +28,7 @@ int main() {
 
 
 	
-	// Set up the palette.
-	//LoadPaletteObj(spritePal);
+
 	//LoadPaletteObj(logoPal);
 	
 
@@ -46,9 +45,7 @@ int main() {
  
 /* JIRI'S NOTES ===================================
 
-	for (int i = 0; i < 128; i++){			// Load Bold Font into charblock 0
-		LoadTile8(0, i, font_bold[i]);	
-	}
+
 
 
 

@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include "gba.h"
+#include "font.h"
 #include "gbaextend.h"
 
 
@@ -32,6 +33,11 @@ extern const unsigned short charblock1Tiles[8192];
 #define charblock1PalLen 512
 extern const unsigned short charblock1Pal[256];
 
+#define charblock2TilesLen 16384
+extern const unsigned short charblock2Tiles[8192];
+
+#define charblock2PalLen 512
+extern const unsigned short charblock2Pal[256];
 
 #define spriteTilesLen 16384
 extern const unsigned short spriteTiles[8192];
@@ -61,28 +67,32 @@ extern int BG1Y_offset;
 
 // ASSET -------------
 
-class player {
+class GameProp {
 		
-		int pointX;			// x coordinates
-		int pointY;			// y coordinates
-		int width;
-		int height;
-		int colour;			// replace by sprite in the future
+		int coordX;			// x coordinates
+		int coordY;			// y coordinates
+		int shape;
+		int size;
+		int sprite;			// number of first Tile in the Sprite
 
 	public:
 				
-		player(int x, int y, int wdt, int hgt);							// constructor
+		GameProp(int x, int y, int sp, int sz, int tile);							// constructor
 	
-		void move(int dx, int dy);		// move player on the screen
+		void init();					// initialize player on the screen
 		
-		void draw();					// draws player on the screen
+		void update();
 		
-		void clear();					// clears player from the screen
+		void render();
+		
+
 				
-		~player(){}						// destructor
+		~GameProp(){}					// destructor
 
 	private:
-		player();						// prevents using of general constructor
+		GameProp();						// prevents using of general constructor
+		
+		void move(int dx, int dy);		// move player on the screen
 		
 };
 
@@ -90,21 +100,16 @@ class player {
 /*
 class bullet {
 		
-		int pointX;			// x coordinates
-		int pointY;			// y coordinates
 		int dx;				// x direction
 		int dy;				// y direction
+		bool friend;
 
 	public:
 				
 		bullet(int x, int y, int _dx, int _dy);		// constructor
+		
+		bool isFriend();
 	
-		void move();					// move bullet on the screen
-		
-		void draw();					// draws bullet on the screen
-		
-		void clear();					// clears bullet from the screen
-				
 		~bullet(){}						// destructor
 
 	private:
@@ -158,10 +163,11 @@ void Set_Background();
 
 // GAME FUNCTION -------------
 
+void Play_Intro();
+
 // The entry point for the game
 void Game();
 
-void Play_Intro();
 // ------------------------------------------------------------------
 
 #endif

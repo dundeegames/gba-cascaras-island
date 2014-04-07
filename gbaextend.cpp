@@ -16,21 +16,31 @@
 
 #include "gbaextend.h"
 
-// STEFANOS'S TEXT =================================================================================
+
+// ADAM'S TEXT =====================================================================================
 
 /*
-#include <stdint.h>
-#include "gba.h"
+void DrawText(int x, int y, const char string[]){
 
-#include "font.h"
+	int i = 0;
 
-int main()
-{
-	REG_DISPCNT = DCNT_MODE0 | DCNT_BG0;
-	REG_BG0CNT = BG_CBB(0) | BG_SBB(30) | BG_4BPP | BG_REG_32x32;
+	while(string[i] != '\0'){
+		SetTile(30, (x+i), y, string[i] | ((i % 2) == 0 ? SE_VFLIP : 0));
+		i++;
+	}
+}
 
-	for(char c = 0; c < 128; c++)
-	{
+
+// ---------------------------------------------------------
+
+*/
+
+
+// STEFANOS'S TEXT =================================================================================
+
+void LoadCompressedText(){				// works only in | BG_4BPP |
+
+	for(char c = 0; c < 128; c++){
 		uint8_t font_compressed[32];
 		for(char x = 0; x < 64; x += 2)
 		{
@@ -39,34 +49,24 @@ int main()
 		LoadTile4(0,c,font_compressed);
 	}
 
+}
+
+
+
+
+/*
 	SetPaletteBG(0, RGB(0, 0, 0));				// black (but actually transparent)
 	SetPaletteBG(1, RGB(31, 31, 31));			// white
 	SetPaletteBG(17, RGB(31, 0, 0));			// red
 	SetPaletteBG(1 + 16 * 2, RGB(0, 31, 0));	// green
 
-	volatile uint16_t* screenBlock = REG_VIDEO_BASE + (30 * 1024);
-
-	volatile uint16_t* nextPtr = REG_VIDEO_BASE + (30 * 1024) + 1024;
-	while( screenBlock < nextPtr )
-		*screenBlock++ = 0;
-
-	int char_num_normal = 'a' | (0 << 12);
+	int char_num_normal = 'a' | (0 << 12);		// white
 	int char_num_red = 'a' | (1 << 12);
 	int char_num_green = 'a' | (2 << 12);
 
 	SetTile(30,5,5, char_num_normal);
 	SetTile(30,5,6, char_num_red);
 	SetTile(30,5,7, char_num_green);
-
-	while (true)
-	{
-		WaitVSync();
-
-	}
-
-	return 0;
-}
-
 
 */
 // JIRI'S 32-bit FUNCTIONS =========================================================================
@@ -85,10 +85,13 @@ void CopyToVRAM32(volatile uint32_t *dest, const uint32_t *src, int num_words)	/
 
 
 
+
+
+
 // ----------------------------------------------------------------------------
 
-
-/* JIRI'S NOTES ====================================================================================
+/*
+// JIRI'S NOTES ====================================================================================
 
 
 
@@ -111,7 +114,7 @@ x |= y	// take x|y (bitwise OR) and assign it to x
 
 // ----------------------------------------------------------------------------
 
-/* MAX'S NOTES =====================================================================================================================================================================
+// MAX'S NOTES =====================================================================================================================================================================
 
 void LoadStartFrame(uint16_t frame)
 {

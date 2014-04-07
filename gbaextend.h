@@ -21,7 +21,7 @@
 
 
 #include "gba.h"
-
+#include "font.h"
 
 // ADAM'S FUNCTIONS ================================================================================
 
@@ -36,9 +36,37 @@ static inline void OrTile(int screenblock, int x, int y, int tile_flags)
 
 // STEFANOS'S TEXT =================================================================================
 
-
+void LoadCompressedText();
 
 // JIRI'S FUNCTIONS ================================================================================
+
+
+
+// Copy a tile entry from a (32x32) screenblock1 to (32x32) screenblock2.
+static inline void CopyTile(int screenblock1, int x1, int y1, int screenblock2, int x2, int y2)
+{
+	REG_VIDEO_BASE[(screenblock2 * 1024) + (y2 * 32) + x2] = REG_VIDEO_BASE[(screenblock1 * 1024) + (y1 * 32) + x1];
+}
+
+// CopyTile from screenblock1 to screenblock2 and then Set a tile entry within a screenblock1 to 0.
+static inline int MoveTile(int screenblock1, int x1, int y1, int screenblock2, int x2, int y2)
+{
+	REG_VIDEO_BASE[(screenblock2 * 1024) + (y2 * 32) + x2] = REG_VIDEO_BASE[(screenblock1 * 1024) + (y1 * 32) + x1];
+	REG_VIDEO_BASE[(screenblock1 * 1024) + (y1 * 32) + x1] = 0;
+}
+
+// Custom function to overwrite artefat pixels on bottom menu
+static inline void FixTile8(int charblock, int tile_num)
+{
+	volatile uint16_t *dest = REG_VIDEO_BASE + (charblock * 8192) + (tile_num * 32);
+	for(int i = 0; i < 4; i++){
+		*dest++ = 0;
+	}
+	//CopyToVRAM(REG_VIDEO_BASE + (charblock * 8192) + (tile_num * 32), 0x0000, 32);
+}
+
+
+
 
 /*
 // Load an 8bpp tile into video RAM.
@@ -57,18 +85,6 @@ void CopyToVRAM(volatile uint16_t *dest, const uint16_t *src, int num_words)
 
 
 */
-
-// Custom function to overwrite artefat pixels on bottom menu
-// Load an 8bpp tile into video RAM.
-static inline void fixArtefacts(int charblock, int tile_num, const uint8_t tile_data[64])
-{
-	CopyToVRAM(REG_VIDEO_BASE + (charblock * 8192) + (tile_num * 32), 0x0000, 32);
-}
-
-
-
-
-
 
 
 

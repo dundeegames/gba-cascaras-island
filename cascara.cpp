@@ -20,7 +20,7 @@
 void DrawText(int x, int y, const char string[]){
 
 	int i = 0;
-
+	
 	while(string[i] != '\0'){
 		SetTile(31, (x+i), y, string[i]);
 		i++;
@@ -29,33 +29,53 @@ void DrawText(int x, int y, const char string[]){
 
 // ---------------------------------------------------------
 
-/*
-void DrawText(int x, int y, const char string[]){
-
+void DrawButton(int x, int y, bool select, const char string[]){
+	
 	int i = 0;
-
+	
+	if(select){
+		SetTile(30, x-1, y, 1);
+		SetTile(30, x-1, y+1, 17);
+	}
+	else{
+		SetTile(30, x-1, y, 222);
+		SetTile(30, x-1, y+1, 238);
+	}
+	
 	while(string[i] != '\0'){
-		SetTile(30, (x+i), y, string[i] | ((i % 2) == 0 ? SE_VFLIP : 0));
+				
+		if(select){
+			SetTile(31, (x+i), y, string[i] | (1 << 12));
+			SetTile(30, (x+i), y, 2);
+			SetTile(30, (x+i), y+1, 18);
+		}
+		else{
+			SetTile(31, (x+i), y, string[i]);
+			SetTile(30, (x+i), y, 254);
+			SetTile(30, (x+i), y+1, 255);
+		}
 		i++;
+	}
+	
+	if(select){
+		SetTile(30, (x+i), y, 3);
+		SetTile(30, (x+i), y+1, 19);
+	}
+	else{
+		SetTile(30, (x+i), y, 223);
+		SetTile(30, (x+i), y+1, 239);
 	}
 }
 
 
-// ---------------------------------------------------------
+// KEYS =========================================================================================
 
-
-
-*/
-
-
-// BUTTONS =========================================================================================
-
-bool Button_Pressed(int KEY) { // check if desired button was pressed
+bool Key_Pressed(int KEY) { // check if desired button was pressed
 	
 	bool x = false;
 	
 	if ((REG_KEYINPUT & KEY) == 0) {
-	x = true;
+		x = true;
 	}
 	
 	
@@ -64,7 +84,7 @@ bool Button_Pressed(int KEY) { // check if desired button was pressed
 
 // ----------------------------------------------------------------------------
 
-bool Button_JustPressed(int KEY, uint16_t &oldButtons) {	// check if desired button was just pressed
+bool Key_JustPressed(int KEY, uint16_t &oldButtons) {	// check if desired button was just pressed
 	
 	
 	uint16_t changed = REG_KEYINPUT ^ oldButtons;			// bitwise masking on REG_KEYINPUT
@@ -72,7 +92,7 @@ bool Button_JustPressed(int KEY, uint16_t &oldButtons) {	// check if desired but
 	bool x = false;
 	
 	if ((changed & KEY) != 0) {
-	x = true;
+		x = true;
 	}
 	
 	
@@ -223,53 +243,72 @@ void Set_Background(){
 	// Set background 2 options.
 	REG_BG2CNT = BG_CBB(1) | BG_SBB(29) | BG_8BPP | BG_REG_32x32;			// land background
 	REG_BG2HOFS = 0;
-	REG_BG2VOFS = 0;
+	REG_BG2VOFS = BG2Y_offset;
 	
 	// Set background 1 options.
 	REG_BG1CNT = BG_CBB(1) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;			// menu layer
 	REG_BG1HOFS = 0;
-	REG_BG1VOFS = 4;
+	REG_BG1VOFS = BG1Y_offset;
 	
 	// Set background 0 options.
-	REG_BG0CNT = BG_CBB(0) | BG_SBB(31) | BG_8BPP | BG_REG_32x32;			// text layer
+	//REG_BG0CNT = BG_CBB(0) | BG_SBB(31) | BG_8BPP | BG_REG_32x32;			// text layer
+	REG_BG0CNT = BG_CBB(0) | BG_SBB(31) | BG_4BPP | BG_REG_32x32;			// text layer
 	REG_BG0HOFS = 0;
 	REG_BG0VOFS = 0;
 	
-// ----------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------
 
-	LoadPaletteBG(charblock1Pal);
+	//LoadPaletteBG(charblock1Pal);
+	LoadPaletteBG(charblock2Pal);
 
-	LoadTileData(1, 0, charblock1Tiles, sizeof charblock1Tiles);	
+	//LoadTileData(1, 0, charblock1Tiles, sizeof charblock1Tiles);
+	LoadTileData(1, 0, charblock2Tiles, sizeof charblock2Tiles);	
 	LoadTile8(1, 0, blank_tile);			// Load blank_tile into charblock - 1 / tile - 0
+
+	/*
+	// Bug fix the artefact pixels
+	FixTile8(1, 160);
+	FixTile8(1, 161);
+	FixTile8(1, 170);
+	FixTile8(1, 172);
+	*/
 	
+	// initiate backgrounds -------------------------------------------------------
 	
 	LoadScreenblock(28, seaSB);
 	
-	// vertically flip the tiles for upper menu
-	/*
-	for (int i = 0; i < 96; i++){
-		menuSB[i] |= SE_VFLIP;	
-	}
-	*/
-	
-	LoadScreenblock(30, menuSB);
-	for (int y = 0; y < 3; ++y) {
-		for (int x = 0; x < 32; ++x) {
-			OrTile(30, x, y, SE_VFLIP);		// amended function from gbaextend.h
-		}
-	}
-	
-	
-	// set backgrounds
 	for (int y = 0; y < 32; ++y){			// Ask about efficiency! Is is OK if it is jumping each loop to 3 different places in memory? Or should I rather create function and execute each SB separately?
 
 		for (int x = 0; x < 32; ++x){
 			SetTile(29, x, y, 0);			// Load blank tiles into SB 29
-			//SetTile(30, x, y, 0);			// Load blank tiles into SB 30
+			SetTile(30, x, y, 0);			// Load blank tiles into SB 30
 			SetTile(31, x, y, 0);			// Load blank tiles into SB 31
 
 		}
+	}	
+	
+	
+	//LoadScreenblock(30, menuSB);
+	
+	
+	// set upper menu --------------------------------
+	for (int y = 0; y < 3; ++y) {
+		int tileNum;
+		for (int x = 0; x < 32; ++x) {
+			tileNum = menuSB[(y*32)+x] | SE_VFLIP;
+			SetTile(30, x, y, tileNum);
+			//OrTile(30, x, y, SE_VFLIP);		// amended function from gbaextend.h
+		}
 	}
+	
+	// set bottom menu -------------------------------
+	for (int y = 18; y < 21; ++y) {
+		for (int x = 0; x < 32; ++x) {
+			SetTile(29, x, y, menuSB[(y*32)+x]);
+		}
+	}
+	
+
 
 
 } // end of Set_Background
@@ -280,9 +319,10 @@ void Set_Background(){
 void Play_Intro(){			// Play logo and sets menu
 
 	int frameCounter = 0;
-	bool showGameName = true;
+	bool inLoop = true;
+	int planeX = 480;		// holds Xcoord for fake plane
 	
-	enum stage {start, studioRise, studioPause, studioFade, fadePause, gameRise, gamePause, gameFade, end};
+	enum stage {start, studioRise, studioPause, studioFade, fadePause, gameRise, gamePause, gameFade, menuSlide, planeSlide, buttons, end};
 	stage logoStage = start;
 	
 	LoadTileData(4, 0, logoTiles, sizeof logoTiles);
@@ -294,7 +334,7 @@ void Play_Intro(){			// Play logo and sets menu
 	}
 
 	
-	while (true){
+	while (inLoop){
 	
 		frameCounter++;
 
@@ -375,8 +415,85 @@ void Play_Intro(){			// Play logo and sets menu
 				if(!(frameCounter%5)){
 					if (Fade_PaletteObj()){
 						frameCounter = 0;
-						logoStage = start;				// change to end
+						logoStage = menuSlide;
 					}				
+				}
+				break;
+				
+			case menuSlide:
+				if(!(frameCounter%3)){
+					if(BG2Y_offset < 4){
+						BG2Y_offset++;					// slide bottom menu up
+						REG_BG2VOFS = BG2Y_offset;					
+					}
+					if(BG1Y_offset > 4){
+						BG1Y_offset--;					// slide top menu down
+						REG_BG1VOFS = BG1Y_offset;					
+					}
+
+					if ((BG1Y_offset == 4) && (BG2Y_offset == 4)){
+					
+						// Move bottom menu from SB29 to SB30-------------------------------
+						for (int y = 18; y < 21; ++y) {
+							for (int x = 0; x < 32; ++x) {
+								MoveTile(29, x, y, 30, x, y);
+							}
+						}
+						
+						BG2Y_offset = 0;				// reset BG2
+						REG_BG2VOFS = BG2Y_offset;
+						
+						// Change objects to (fake) play characters and update Charbolock and Palette
+						
+						SetObject(0,
+						  ATTR0_SHAPE(1) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
+						  ATTR1_SIZE(2) | ATTR1_X(planeX),
+						  ATTR2_ID8(0));
+						  
+						SetObject(1,
+						  ATTR0_SHAPE(1) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
+						  ATTR1_SIZE(1) | ATTR1_X(250),
+						  ATTR2_ID8(72));
+						  
+						LoadTileData(4, 0, spriteTiles, sizeof spriteTiles);
+
+						LoadPaletteObj(spritePal);
+
+						// -----------------------------------------------------------------
+						
+						logoStage = planeSlide;
+					}				
+				}				
+				break;
+				
+			case planeSlide:
+				if(!(frameCounter%3)){
+					if(planeX < 520){
+						planeX++;
+						SetObjectX(0, planeX);
+					}
+					else{
+					
+						LoadCompressedText();
+					/*	for (int i = 0; i < 128; i++){			// Load Bold Font into charblock 0
+							LoadTile8(0, i, font_bold[i]);	
+						}*/
+
+						logoStage = buttons;
+					}					
+				}
+				break;
+				
+			case buttons:
+				DrawButton(8, 13, true, "START");
+				DrawButton(17, 13, false, "ABOUT");
+				
+				
+				break;
+				
+			case end:
+				if(!(frameCounter%5)){
+
 				}
 				break;
 						
@@ -387,8 +504,8 @@ void Play_Intro(){			// Play logo and sets menu
 		UpdateObjects();
 		
 		if (!(frameCounter%3)){
-		BG3X_offset += 1;
-		REG_BG3HOFS = BG3X_offset;
+			BG3X_offset += 1;
+			REG_BG3HOFS = BG3X_offset;
 		}
 	}
 
