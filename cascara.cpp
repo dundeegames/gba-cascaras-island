@@ -359,7 +359,7 @@ void Play_Intro(){			// Play logo and sets menu
 	
 	int planeX = 480;			// holds Xcoord for fake plane
 	
-	enum stage {start, studioRise, studioPause, studioFade, fadePause, gameRise, gamePause, gameFade, menuSlide, planeSlide, buttons, about, end};
+	enum stage {skip, start, studioRise, studioPause, studioFade, fadePause, gameRise, gamePause, gameFade, menuSlide, planeSlide, buttons, about, end};
 	stage logoStage = start;
 	
 	LoadTileData(4, 0, logoTiles, sizeof logoTiles);
@@ -372,12 +372,50 @@ void Play_Intro(){			// Play logo and sets menu
 
 	
 	while (inLoop){
-	
+
 		frameCounter++;
 
 		switch(logoStage){
-			
+
+			case skip:
+				ClearObjects();
+				
+				LoadPaletteObj(spritePal);
+				LoadTileData(4, 0, spriteTiles, sizeof spriteTiles);
+				
+				//-------------------------------
+				for (int y = 0; y < 32; ++y){
+					for (int x = 0; x < 32; ++x){
+						SetTile(29, x, y, 0);			// Set SB 29 to 0
+					}
+				}	
+				
+				LoadScreenblock(30, menuSB);
+
+				// set upper menu --------------------------------
+				for (int y = 0; y < 3; ++y) {
+					for (int x = 0; x < 32; ++x) {
+						OrTile(30, x, y, SE_VFLIP);		// amended function from gbaextend.h
+					}
+				}
+				
+				BG1Y_offset = 4;				// rset BG1
+				REG_BG1VOFS = BG1Y_offset;
+				
+				BG2Y_offset = 0;				// reset BG2
+				REG_BG2VOFS = BG2Y_offset;
+				
+				LoadCompressedText();
+				
+				logoStage = end;
+				
+				break;
+
 			case start:
+				if (Key_Pressed(KEY_START)){
+					logoStage = skip;			
+				}
+						
 				if(frameCounter > 120){
 					SetObject(0,
 					  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
@@ -394,6 +432,10 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case studioRise:
+				if (Key_Pressed(KEY_START)){
+					logoStage = skip;			
+				}
+				
 				if(!(frameCounter%5)){
 					if (Rise_PaletteObj(logoPal)){
 						frameCounter = 0;
@@ -403,12 +445,20 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case studioPause:
+				if (Key_Pressed(KEY_START)){
+					logoStage = skip;			
+				}
+			
 				if(frameCounter > 120){
 					logoStage = studioFade;				
 				}
 				break;
 				
 			case studioFade:
+				if (Key_Pressed(KEY_START)){
+					logoStage = skip;			
+				}
+			
 				if(!(frameCounter%5)){
 					if (Fade_PaletteObj()){
 						SetObject(0,
@@ -428,12 +478,20 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case fadePause:
+				if (Key_Pressed(KEY_START)){
+					logoStage = skip;			
+				}
+			
 				if(frameCounter > 120){
 					logoStage = gameRise;
 				}
 				break;
 				
 			case gameRise:
+				if (Key_Pressed(KEY_START)){
+					logoStage = skip;			
+				}
+				
 				if(!(frameCounter%7)){
 					if (Rise_PaletteObj(logoPal)){
 						frameCounter = 0;
@@ -443,12 +501,20 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case gamePause:
+				if (Key_Pressed(KEY_START)){
+					logoStage = skip;			
+				}
+			
 				if(frameCounter > 120){
 					logoStage = gameFade;				
 				}
 				break;
 				
 			case gameFade:
+				if (Key_Pressed(KEY_START)){
+					logoStage = skip;			
+				}
+			
 				if(!(frameCounter%5)){
 					if (Fade_PaletteObj()){
 						frameCounter = 0;
@@ -458,6 +524,10 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case menuSlide:
+				if (Key_Pressed(KEY_START)){
+					logoStage = skip;			
+				}
+				
 				if(!(frameCounter%3)){
 					if(BG2Y_offset < 4){
 						BG2Y_offset++;					// slide bottom menu up
@@ -504,6 +574,10 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case planeSlide:
+				if (Key_Pressed(KEY_START)){
+					logoStage = skip;			
+				}
+			
 				if(!(frameCounter%3)){
 					if(planeX < 520){
 						planeX++;
