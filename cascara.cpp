@@ -2,6 +2,11 @@
 
 // CLASS FUNCTIONS =================================================================================
 
+// GAMEPROP -------------------------------------------------------------------
+
+
+
+
 
 // PLAYER ---------------------------------------------------------------------
 
@@ -357,9 +362,11 @@ void Play_Intro(){			// Play logo and sets menu
 	bool inLoop = true;
 	bool startSelect = true;	// draw first screen with START selected
 	
+	int pauseCounter = 0;
+	
 	int planeX = 480;			// holds Xcoord for fake plane
 	
-	enum stage {skip, start, studioRise, studioPause, studioFade, fadePause, gameRise, gamePause, gameFade, menuSlide, planeSlide, buttons, about, end};
+	enum stage {skip, start, studioRise, Pause, studioFade, gameRise, gameFade, menuSlide, planeSlide, buttons, about, end};
 	stage logoStage = start;
 	
 	LoadTileData(4, 0, logoTiles, sizeof logoTiles);
@@ -374,6 +381,15 @@ void Play_Intro(){			// Play logo and sets menu
 	while (inLoop){
 
 		frameCounter++;
+		
+		if (Key_Pressed(KEY_START)){
+			switch(logoStage){
+				case buttons:	break;
+				case about:		break;
+				case end:		break;
+				default:	logoStage = skip;	break;
+			}				
+		}
 
 		switch(logoStage){
 
@@ -412,10 +428,6 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 
 			case start:
-				if (Key_Pressed(KEY_START)){
-					logoStage = skip;			
-				}
-						
 				if(frameCounter > 120){
 					SetObject(0,
 					  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
@@ -432,33 +444,27 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case studioRise:
-				if (Key_Pressed(KEY_START)){
-					logoStage = skip;			
-				}
-				
 				if(!(frameCounter%5)){
 					if (Rise_PaletteObj(logoPal)){
 						frameCounter = 0;
-						logoStage = studioPause;
+						logoStage = Pause;
 					}				
 				}
 				break;
 				
-			case studioPause:
-				if (Key_Pressed(KEY_START)){
-					logoStage = skip;			
-				}
-			
+			case Pause:
 				if(frameCounter > 120){
-					logoStage = studioFade;				
+					switch(pauseCounter){
+						case 0:	logoStage = studioFade;	break;
+						case 1:	logoStage = gameRise;	break;
+						case 2:	logoStage = gameFade;	break;
+						case 3:	logoStage = studioFade;	break;		// should never activate (ToDo: evolve into proper Error test)			
+					}
+					pauseCounter++;									
 				}
 				break;
 				
 			case studioFade:
-				if (Key_Pressed(KEY_START)){
-					logoStage = skip;			
-				}
-			
 				if(!(frameCounter%5)){
 					if (Fade_PaletteObj()){
 						SetObject(0,
@@ -472,49 +478,21 @@ void Play_Intro(){			// Play logo and sets menu
 						  ATTR2_ID8(136));
 						
 						frameCounter = 0;
-						logoStage = fadePause;
+						logoStage = Pause;
 					}				
 				}
 				break;
 				
-			case fadePause:
-				if (Key_Pressed(KEY_START)){
-					logoStage = skip;			
-				}
-			
-				if(frameCounter > 120){
-					logoStage = gameRise;
-				}
-				break;
-				
 			case gameRise:
-				if (Key_Pressed(KEY_START)){
-					logoStage = skip;			
-				}
-				
 				if(!(frameCounter%7)){
 					if (Rise_PaletteObj(logoPal)){
 						frameCounter = 0;
-						logoStage = gamePause;
+						logoStage = Pause;
 					}
 				}
 				break;
 				
-			case gamePause:
-				if (Key_Pressed(KEY_START)){
-					logoStage = skip;			
-				}
-			
-				if(frameCounter > 120){
-					logoStage = gameFade;				
-				}
-				break;
-				
 			case gameFade:
-				if (Key_Pressed(KEY_START)){
-					logoStage = skip;			
-				}
-			
 				if(!(frameCounter%5)){
 					if (Fade_PaletteObj()){
 						frameCounter = 0;
@@ -524,10 +502,6 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case menuSlide:
-				if (Key_Pressed(KEY_START)){
-					logoStage = skip;			
-				}
-				
 				if(!(frameCounter%3)){
 					if(BG2Y_offset < 4){
 						BG2Y_offset++;					// slide bottom menu up
@@ -574,10 +548,6 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case planeSlide:
-				if (Key_Pressed(KEY_START)){
-					logoStage = skip;			
-				}
-			
 				if(!(frameCounter%3)){
 					if(planeX < 520){
 						planeX++;
@@ -675,6 +645,21 @@ void Play_Intro(){			// Play logo and sets menu
 
 
 // GAME ============================================================================================
+
+// ----------------------------------------------------------------------------
+
+/*
+// Collision Detection: returns true if objects collide
+bool Hit_Test(GameProp* obj1, GameProp* obj2){
+	if ((obj1->coordX + obj1->width) < (obj2->coordX)) return false;
+	if ((obj2->coordX + obj2->width) < (obj1->coordX)) return false;
+	if ((obj1->coordY + obj1->height) < (obj2->coordY)) return false;
+	if ((obj2->coordY + obj2->height) < (obj1->coordY)) return false;
+	return true;
+}
+*/
+
+// ----------------------------------------------------------------------------
 
 void Play_Game(){
 

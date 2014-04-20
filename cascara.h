@@ -70,15 +70,19 @@ extern int frameCounter;
 
 class GameProp {
 		
-		int coordX;			// x coordinates
-		int coordY;			// y coordinates
+		int coordX;			// left
+		int coordY;			// top
+		int width;
+		int height;
+		
 		int shape;
 		int size;
 		int sprite;			// number of first Tile in the Sprite
 
 	public:
-				
-		GameProp(int x, int y, int sp, int sz, int tile);							// constructor
+		
+		// ToDo: Calculate rightX and bottomY from shape and size
+		GameProp(int x, int y, int sp, int sz, int tile);
 	
 		void init();					// initialize player on the screen
 		
@@ -88,7 +92,7 @@ class GameProp {
 		
 
 				
-		~GameProp(){}					// destructor
+		~GameProp(){}
 
 	private:
 		GameProp();						// prevents using of general constructor
