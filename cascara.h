@@ -51,6 +51,12 @@ extern const uint16_t seaSB[1024];
 
 extern const uint16_t menuSB[1024];
 
+// Easter Egg --------
+#define easterEggTilesLen 16384
+extern const unsigned short easterEggTiles[8192];
+
+#define easterEggPalLen 512
+extern const unsigned short easterEggPal[256];
 
 
 // GLOBAL VARIABLE --------------------------------------------------
