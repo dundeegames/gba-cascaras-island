@@ -26,18 +26,11 @@ extern const unsigned short logoPal[256];
 
 extern const uint8_t blank_tile[64];
 
-
-#define charblock1TilesLen 16384
-extern const unsigned short charblock1Tiles[8192];
-
-#define charblock1PalLen 512
-extern const unsigned short charblock1Pal[256];
-
 #define charblock2TilesLen 16384
-extern const unsigned short charblock2Tiles[8192];
+extern const unsigned short charblockTiles[8192];
 
 #define charblock2PalLen 512
-extern const unsigned short charblock2Pal[256];
+extern const unsigned short charblockPal[256];
 
 #define spriteTilesLen 16384
 extern const unsigned short spriteTiles[8192];

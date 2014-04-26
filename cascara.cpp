@@ -299,10 +299,10 @@ void Set_Background(){
 	// ----------------------------------------------------------------------------
 
 	//LoadPaletteBG(charblock1Pal);
-	LoadPaletteBG(charblock2Pal);
+	LoadPaletteBG(charblockPal);
 
 	//LoadTileData(1, 0, charblock1Tiles, sizeof charblock1Tiles);
-	LoadTileData(1, 0, charblock2Tiles, sizeof charblock2Tiles);	
+	LoadTileData(1, 0, charblockTiles, sizeof charblockTiles);	
 	LoadTile8(1, 0, blank_tile);			// Load blank_tile into charblock - 1 / tile - 0
 
 	/*

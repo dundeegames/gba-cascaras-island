@@ -24,8 +24,7 @@ OBJECTS = \
 	font.o \
 	cascara.o \
 	logo.o \
-	charblock1.o \
-	charblock2.o \
+	charblock.o \
 	sprite.o \
 	screenblocks.o \
 	gbaextend.o \

@@ -24,8 +24,19 @@
 
 #include "cascara.h"			// my header
 
+const uint8_t blank_tile[64] = {
 
-const unsigned short charblock2Tiles[8192] __attribute__((aligned(4)))=
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+const unsigned short charblockTiles[8192] __attribute__((aligned(4)))=
 {
 	0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
 	0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
@@ -1180,7 +1191,7 @@ const unsigned short charblock2Tiles[8192] __attribute__((aligned(4)))=
 	0x1414,0x1414,0x1414,0x1414,0x1010,0x1010,0x1010,0x1010,
 };
 
-const unsigned short charblock2Pal[256] __attribute__((aligned(4)))=
+const unsigned short charblockPal[256] __attribute__((aligned(4)))=
 {
 	0x6F37,0x7FFF,0x4946,0x4525,0x4924,0x4504,0x4525,0x0000,
 	0x58E7,0x0401,0x5ED7,0x6D09,0x5D4B,0x5DCF,0x7CC6,0x7D29,
