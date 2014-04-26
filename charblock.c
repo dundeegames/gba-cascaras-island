@@ -1,11 +1,26 @@
 /*
 **************************************************************************
-**                    Charblock2 by Jiri Klic, 2014                     **
+**                     Charblock by Jiri Klic, 2014                     **
 **                                                                      **
-**    Name:          Sprite Coordinates:          Size:                 **
+**    Name:              Tile Coordinates:	        Size:               **
 **                                                                      **
-**    Jiri Klic Presents      [0,8]               [8x8,8x8]             **
-**    Cascara's Island        [128,136]           [8x8,8x8]             **
+**    Button Selected	 [1,2,3,17,18,19]           [1x1]               **
+**    Button Unselected	 [222,254,223,238,255,239]  [1x1]               **
+**    GAME OVER		 	 [4,..,15,20,..31]          [1x1]               **
+**    SeaLeft row01		 [32,..,47]                 [1x1]               **
+**    SeaLeft row02		 [48,..,63]                 [1x1]               **
+**    SeaLeft row03		 [64,..,79]                 [1x1]               **
+**    SeaLeft row04		 [80,..,95]                 [1x1]               **
+**    SeaRight row01	 [96,..,111]                [1x1]               **
+**    SeaRight row02	 [112,..,127]               [1x1]               **
+**    SeaRight row03	 [128,..,143]               [1x1]               **
+**    SeaRight row04	 [144,..,159]               [1x1]               **
+**    HUD_Left row01	 [160,..,175]               [1x1]               **
+**    HUD_Left row02	 [176,..,191]               [1x1]               **
+**    HUD_Left row03	 [192,..,207]               [1x1]               **
+**    HUD_Right row01	 [208,..,221]               [1x1]               **
+**    HUD_Right row02	 [224,..,237]               [1x1]               **
+**    HUD_Right row03	 [240,..,253]               [1x1]               **
 **                                                                      **
 **    ==============================================================    **
 **                                                                      **

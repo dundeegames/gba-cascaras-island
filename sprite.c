@@ -2,10 +2,27 @@
 **************************************************************************
 **                      Sprite by Jiri Klic, 2014                       **
 **                                                                      **
-**    Name:          Sprite Coordinates:          Size:                 **
+**    Name:          	Sprite Coordinates:       Size:                 **
 **                                                                      **
-**    Jiri Klic Presents      [0,8]               [8x8,8x8]             **
-**    Cascara's Island        [128,136]           [8x8,8x8]             **
+**    Player+bomb	  	[0]     	         	  [4x2]     	        **
+**    Player			[4]		              	  [4x2]    		        **
+**    Zeppelin        	[8,40]           		  [8x2,8x1]             **
+**    BOSS				[32]	              	  [8x8]    		        **
+**    Ship				[56]		              [8x1]    		        **
+**    Enemy				[72]		              [4x1]    		        **
+**    Bombs				[76,77,78,79]		      [1x1]    		        **
+**    Lightning			[88]		              [8x1]    		        **
+**    Land Explosion	[104]		              [4x4]    		        **
+**    Sea Explosion		[110]		              [2x4]    		        **
+**    Bullet Yellow		[108]		              [1x1]    		        **
+**    Bullet Red		[109]		              [1x1]    		        **
+**    Bullet Black		[124]		              [1x1]    		        **
+**    Star				[125]		              [1x1]    		        **
+**    Balloon(health)	[140]		              [1x2]    		        **
+**    Balloon(bomb)		[141]		              [1x2]    		        **
+**    Explosion Row01	[160,162,..,174]		  [2x2]    		        **
+**    Explosion Row02	[192,194,..,206]		  [2x2]    		        **
+**    Explosion Row03	[224,226,..,238]		  [2x2]    		        **
 **                                                                      **
 **    ==============================================================    **
 **                                                                      **
