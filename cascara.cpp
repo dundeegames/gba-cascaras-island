@@ -63,6 +63,14 @@ void Player::update(){
 		}
 	}
 	
+	if (Key_Pressed(KEY_A)) {
+		SetObjectTile(objNumber, ATTR2_ID8(4));
+	}
+
+	if (Key_Pressed(KEY_B)) {
+		SetObjectTile(objNumber, ATTR2_ID8(0));
+	}
+	
 }
 
 

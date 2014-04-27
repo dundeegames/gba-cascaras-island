@@ -65,6 +65,62 @@ static inline void FixTile8(int charblock, int tile_num)
 	//CopyToVRAM(REG_VIDEO_BASE + (charblock * 8192) + (tile_num * 32), 0x0000, 32);
 }
 
+// ---------------------------------------------------
+
+//SetObjectTile(object, ATTR2_ID8(tile))
+static inline void SetObjectTile(int object, uint16_t attr2)
+{
+	ObjAttr& obj(ObjBuffer[object]);
+	obj.attr2 = attr2;
+}
+
+
+
+
+/*
+// Set all of an object's attributes at once.
+static inline void SetObject(int object, uint16_t attr0, uint16_t attr1, uint16_t attr2)
+{
+	ObjAttr& obj(ObjBuffer[object]);
+	obj.attr0 = attr0;
+	obj.attr1 = attr1;
+	obj.attr2 = attr2;
+}
+
+// Set an object's X position.
+static inline void SetObjectX(int object, int x)
+{
+	ObjAttr& obj(ObjBuffer[object]);
+	obj.attr1 = (obj.attr1 & ~ATTR1_X_MASK) | ATTR1_X(x);
+}
+
+// Set an object's Y position.
+static inline void SetObjectY(int object, int y)
+{
+	ObjAttr& obj(ObjBuffer[object]);
+	obj.attr0 = (obj.attr0 & ~ATTR0_Y_MASK) | ATTR0_Y(y);
+}
+*/
+
+// ---------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

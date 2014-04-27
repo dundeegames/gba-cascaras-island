@@ -70,7 +70,6 @@ extern int frameCounter;
 
 class GameProp {
 		
-		int objNumber;
 		bool dead = false;
 		
 		friend bool Hit_Test(GameProp* obj1, GameProp* obj2);
@@ -96,7 +95,8 @@ class GameProp {
 		void move(int dx, int dy);		// move player on the screen
 		
 	protected:
-	
+		
+		int objNumber;
 		int coordX;			// left
 		int coordY;			// top
 		int width;
