@@ -100,6 +100,29 @@ void Player::drawSkill(){
 	DrawText(15, 19, 0, buffer);
 }
 
+
+// ENEMY ----------------------------------------------------------------------
+
+Enemy::Enemy(int id, int x, int y) :
+	GameProp(id, x, y, 32, 8, 1, 1, 72){}
+
+
+void Enemy::update(){
+
+	coordX--;
+	if(coordX < 0){
+		coordX += 512;
+	}
+	if((coordX > 400) && (coordX < 480)){
+		coordY = ((rand()%84)+24);
+		coordX = 250;
+	}
+
+}
+
+
+
+
 // TIME -----------------------------------------------------------------------
 
 void Time::setTime(int f, int s, int m){		// initialize time
@@ -608,16 +631,10 @@ void Play_Intro(){			// Play logo and sets menu
 			case studioFade:
 				if(!(frameCounter%5)){
 					if (Fade_PaletteObj()){
-						SetObject(0,
-						  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
-						  ATTR1_SIZE(3) | ATTR1_X(56),
-						  ATTR2_ID8(128));
-						  
-						SetObject(1,
-						  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
-						  ATTR1_SIZE(3) | ATTR1_X(120),
-						  ATTR2_ID8(136));
-						
+
+						SetObjectTile(0, ATTR2_ID8(128));
+						SetObjectTile(1, ATTR2_ID8(136));
+
 						frameCounter = 0;
 						logoStage = Pause;
 					}				
@@ -666,7 +683,6 @@ void Play_Intro(){			// Play logo and sets menu
 						REG_BG2VOFS = BG2Y_offset;
 						
 						// Change objects to (fake) play characters and update Charbolock and Palette
-						
 						SetObject(0,
 						  ATTR0_SHAPE(1) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
 						  ATTR1_SIZE(2) | ATTR1_X(planeX),
@@ -807,6 +823,8 @@ bool Hit_Test(GameProp* obj1, GameProp* obj2){
 
 void Play_Game(){
 
+	srand((unsigned)frameCounter);
+
 /*
 // PSEUDOCODE ------------------
 
@@ -828,58 +846,51 @@ IF(object[i].isDead()){
 
 // -----------------------------
 */
-	
-	int EnemyX = 250;
-	int EnemyY = 32;
-	
 	Time* time = new Time();
 	Player* player = new Player(0,8,32);
+	Enemy* enemy = new Enemy(1,250,32);
+
 	
 	time->setTime(0, 0, 99);			//test values
+	time->drawTime();
+
 	
 	REG_BG0VOFS = 4;	
 
-	time->drawTime();
-
-
-	SetObject(1,
-	  ATTR0_SHAPE(1) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(EnemyY),
-	  ATTR1_SIZE(1) | ATTR1_X(EnemyX),
-	  ATTR2_ID8(72));
 
 	while(true){
 	
 		frameCounter++;
 		
+		// UPDATE ------------------
 		time->update();
-		
 		player->update();
+		enemy->update();
+
 		
+		// COLLISION ---------------
+		
+		
+		
+		
+		// RENDER ------------------
 		player->render();
-		
-		// Update enemy
-		EnemyX--;
-		if(EnemyX < 0){
-			EnemyX += 512;
-		}
-		if((EnemyX > 400) && (EnemyX < 480)){
-			EnemyY = ((frameCounter%84)+24);
-			SetObjectY(1, EnemyY);
-			EnemyX = 250;
-		}
-		SetObjectX(1, EnemyX);
-		
-		WaitVSync();
-				
-		UpdateObjects();
-		
+		enemy->render();
 		time->drawTime();
+
+		
+		// SYSTEM ------------------
+		WaitVSync();
+		UpdateObjects();
 		
 		if (!(frameCounter%3)){
 			BG3X_offset += 1;
 			REG_BG3HOFS = BG3X_offset;
 		}
+		
 	}
 
 	delete time;
+	delete player;
+	delete enemy;
 }

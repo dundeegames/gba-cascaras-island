@@ -9,6 +9,7 @@
 #define CASCARA_H
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include "gba.h"
 #include "font.h"
@@ -126,6 +127,26 @@ class Player : public GameProp{
 		void drawLife();
 		void drawSkill();
 };
+
+// ENEMY -------------
+
+class Enemy : public GameProp{
+
+		int score = 20;
+
+	public:
+	
+		Enemy(int id, int x, int y);
+	
+		void update();
+
+
+	private:
+
+};
+
+
+
 
 
 // BULLET ------------
