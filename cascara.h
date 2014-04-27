@@ -9,6 +9,7 @@
 #define CASCARA_H
 
 #include <stdint.h>
+#include <stdio.h>
 #include "gba.h"
 #include "font.h"
 #include "gbaextend.h"
@@ -65,44 +66,71 @@ extern int frameCounter;
 
 // CLASS PROTOTYPES -------------------------------------------------
 
-// ASSET -------------
+// GAMEPROP (Abstract) -------------
 
 class GameProp {
 		
+		int objNumber;
+		bool dead = false;
+		
+		friend bool Hit_Test(GameProp* obj1, GameProp* obj2);
+		
+	public:
+	
+		// (ID,coordX,coordY,width(pixels),height(pixels),shape,size,tile)
+		GameProp(int id, int x, int y, int w, int h, int sp, int sz, int tile);	
+		
+		bool isDead();
+		
+		virtual void update() = 0;
+		
+		void render();
+
+		
+		~GameProp(){}
+
+	private:
+	
+		//GameProp();						// prevents using of general constructor
+		
+		void move(int dx, int dy);		// move player on the screen
+		
+	protected:
+	
 		int coordX;			// left
 		int coordY;			// top
 		int width;
 		int height;
-		
-		int shape;
-		int size;
-		int sprite;			// number of first Tile in the Sprite
+};
+
+
+// PLAYER ------------
+
+class Player : public GameProp{
+
+		int life = 100;
+		int skill = 1;
+		int score = 9999;
 
 	public:
-		
-		// ToDo: Calculate rightX and bottomY from shape and size
-		GameProp(int x, int y, int sp, int sz, int tile);
 	
-		void init();					// initialize player on the screen
-		
+		Player(int id, int x, int y);
+	
 		void update();
 		
-		void render();
-		
-
-				
-		~GameProp(){}
+		//void drawStats();
 
 	private:
-		GameProp();						// prevents using of general constructor
 		
-		void move(int dx, int dy);		// move player on the screen
-		
+		void drawScore();
+		void drawLife();
+		void drawSkill();
 };
+
 
 // BULLET ------------
 /*
-class bullet {
+class Bullet {
 		
 		int dx;				// x direction
 		int dy;				// y direction
@@ -122,7 +150,27 @@ class bullet {
 };
 */
 
+// TIME -------------
 
+class Time {
+		
+		int frames = 0;			// 60/second
+		int seconds = 0;
+		int minutes = 0;
+		
+		char buffer[20];
+
+	public:
+	
+		void setTime(int f, int s, int m);			// initialize time
+		
+		void update();
+		
+		void drawTime();
+
+	private:
+
+};
 
 // FUNCTION PROTOTYPES ----------------------------------------------
 

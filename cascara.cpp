@@ -4,22 +4,155 @@
 
 // GAMEPROP -------------------------------------------------------------------
 
+GameProp::GameProp(int id, int x, int y, int w, int h, int shape, int size, int tile){	//(ID,coordX,coordY,width(pixels),height(pixels),shape,size,tile)
 
+	objNumber = id;
+	coordX = x;			// left
+	coordY = y;			// top
+	width = w;
+	height = h;
+	
+	SetObject(objNumber,
+	  ATTR0_SHAPE(shape) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(coordY),
+	  ATTR1_SIZE(size) | ATTR1_X(coordX),
+	  ATTR2_ID8(tile));
+	
+}
 
+bool GameProp::isDead(){
+	return dead;
+}
 
-
+void GameProp::render(){
+	SetObjectX(objNumber, coordX);
+	SetObjectY(objNumber, coordY);
+}
 // PLAYER ---------------------------------------------------------------------
 
+Player::Player(int id, int x, int y) : GameProp(id, x, y, 32, 16, 1, 2, 0){
+	drawScore();
+	drawLife();
+	drawSkill();	
+}
 
 
+void Player::update(){
+
+	// Check user input
+	if (Key_Pressed(KEY_UP)) {
+		if(coordY > 24){
+			coordY--;
+		}
+	}
+	
+	if (Key_Pressed(KEY_DOWN)) {
+		if(coordY < 108){
+			coordY++;
+		}
+	}
+	
+	if (Key_Pressed(KEY_LEFT)) {
+		if(coordX > 8){
+			coordX--;
+		}
+	}
+
+	if (Key_Pressed(KEY_RIGHT)) {
+		if(coordX < 200){
+			coordX++;
+		}
+	}
+	
+}
 
 
+void Player::drawScore(){
+
+	char buffer[20];
+	snprintf(buffer, sizeof buffer, "SCORE:%5d", score);
+	
+	DrawText(1, 1, 0, buffer);
+}
 
 
+void Player::drawLife(){
+
+	char buffer[20];
+	snprintf(buffer, sizeof buffer, "LIFE:%4d", life);
+
+	DrawText(1, 19, 0, buffer);
+}
+
+
+void Player::drawSkill(){
+
+	char buffer[20];
+	snprintf(buffer, sizeof buffer, "SKILL:%4d/100", skill);
+
+	DrawText(15, 19, 0, buffer);
+}
+
+// TIME -----------------------------------------------------------------------
+
+void Time::setTime(int f, int s, int m){		// initialize time
+	frames = f;									// 60/second
+	seconds = s;
+	minutes = m;
+}
+
+void Time::update(){
+
+	frames++;									// 60/second
+	
+	if (frames == 60){
+		frames = 0;
+		seconds++;
+	
+		if (seconds == 60){
+			seconds = 0;
+			minutes++;
+		}
+	}
+}
+
+void Time::drawTime(){
+	if(minutes < 100){
+		snprintf(buffer, sizeof buffer, "TIME: %02d:%02d:%02d", minutes, seconds, frames);
+	}
+	else{
+		snprintf(buffer, sizeof buffer, "TIME:%02d:%02d:%02d", minutes, seconds, frames);
+	}
+	DrawText(15, 1, 0, buffer);
+}
 
 
 
 // TEXT ============================================================================================
+
+/*
+// Draw \0-terminated string s at position (x, y) in colour colour.
+void DrawString8(int x, int y, int colour, const char *s) {
+	while (*s != '\0') {
+		DrawChar8(x, y, colour, *s);
+		x += 8;
+		s++;
+	}
+}
+
+// Then you can use it something like this...
+void SomeOtherFunction() {
+	int score = 42;
+
+	DrawString8(10, 10, 1, "Hello world!");
+	
+	// To print variables, use snprintf to produce a string, then print the string.
+	// (Look at the manual for "printf" to see how the % directives work.)
+	char buf[40];
+	snprintf(buf, sizeof buf, "Score is %03d", score);
+	DrawString8(10, 30, 1, buf);
+*/
+
+// ---------------------------------------------------------
 
 // 	values for colour (0-15):
 //	0-white, 1-yellow, 2-green, 3-red, 4-cyan, 5-blue, 6-pink,
@@ -381,7 +514,7 @@ void Play_Intro(){			// Play logo and sets menu
 	while (inLoop){
 
 		frameCounter++;
-		
+
 		if (Key_Pressed(KEY_START)){
 			switch(logoStage){
 				case buttons:	break;
@@ -648,7 +781,7 @@ void Play_Intro(){			// Play logo and sets menu
 
 // ----------------------------------------------------------------------------
 
-/*
+
 // Collision Detection: returns true if objects collide
 bool Hit_Test(GameProp* obj1, GameProp* obj2){
 	if ((obj1->coordX + obj1->width) < (obj2->coordX)) return false;
@@ -657,28 +790,49 @@ bool Hit_Test(GameProp* obj1, GameProp* obj2){
 	if ((obj2->coordY + obj2->height) < (obj1->coordY)) return false;
 	return true;
 }
-*/
+
+
+// USE WITH SORT ALGORITHM ON object[128]
+
 
 // ----------------------------------------------------------------------------
 
 void Play_Game(){
 
-	int PlayerX = 8;
-	int PlayerY = 32;
+/*
+// PSEUDOCODE ------------------
+
+GameProp* object[128];
+
+for(int i = 0; i<128; i++){
+	object[i] = 0;
+}
+
+IF(object[i] != 0){
+	object[i].updae();
+}
+ELSE {CONTINUE}
+
+IF(object[i].isDead()){
+	delete object[i];
+	object[i] = 0;
+}
+
+// -----------------------------
+*/
 	
 	int EnemyX = 250;
 	int EnemyY = 32;
-
+	
+	Time* time = new Time();
+	Player* player = new Player(0,8,32);
+	
+	time->setTime(0, 0, 99);			//test values
+	
 	REG_BG0VOFS = 4;	
-	DrawText(1, 1, 0, "SCORE: 9999");
-	DrawText(15, 1, 0, "TIME: 00:00:00");
-	DrawText(1, 19, 0, "LIFE: 100");
-	DrawText(15, 19, 0, "SKILL:   1/100");
 
-	SetObject(0,
-	  ATTR0_SHAPE(1) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(PlayerY),
-	  ATTR1_SIZE(2) | ATTR1_X(PlayerX),
-	  ATTR2_ID8(0));
+	time->drawTime();
+
 
 	SetObject(1,
 	  ATTR0_SHAPE(1) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(EnemyY),
@@ -689,34 +843,11 @@ void Play_Game(){
 	
 		frameCounter++;
 		
-		// Check user input
-		if (Key_Pressed(KEY_UP)) {
-			if(PlayerY > 24){
-				PlayerY--;
-				SetObjectY(0, PlayerY);
-			}
-		}
+		time->update();
 		
-		if (Key_Pressed(KEY_DOWN)) {
-			if(PlayerY < 108){
-				PlayerY++;
-				SetObjectY(0, PlayerY);
-			}
-		}
+		player->update();
 		
-		if (Key_Pressed(KEY_LEFT)) {
-			if(PlayerX > 8){
-				PlayerX--;
-				SetObjectX(0, PlayerX);
-			}
-		}
-
-		if (Key_Pressed(KEY_RIGHT)) {
-			if(PlayerX < 200){
-				PlayerX++;
-				SetObjectX(0, PlayerX);
-			}
-		}
+		player->render();
 		
 		// Update enemy
 		EnemyX--;
@@ -734,11 +865,13 @@ void Play_Game(){
 				
 		UpdateObjects();
 		
+		time->drawTime();
+		
 		if (!(frameCounter%3)){
 			BG3X_offset += 1;
 			REG_BG3HOFS = BG3X_offset;
 		}
 	}
 
-
+	delete time;
 }
