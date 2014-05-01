@@ -38,6 +38,25 @@ void DrawText(int x, int y, const char string[]){
 
 // STEFANO'S TEXT =================================================================================
 
+/*
+	SetPaletteBG(0, RGB(0, 0, 0));				// black (but actually transparent)
+	SetPaletteBG(1, RGB(31, 31, 31));			// white
+	SetPaletteBG(17, RGB(31, 0, 0));			// red
+	SetPaletteBG(1 + 16 * 2, RGB(0, 31, 0));	// green
+
+	int char_num_normal = 'a' | (0 << 12);		// white
+	int char_num_red = 'a' | (1 << 12);
+	int char_num_green = 'a' | (2 << 12);
+
+	SetTile(30,5,5, char_num_normal);
+	SetTile(30,5,6, char_num_red);
+	SetTile(30,5,7, char_num_green);
+
+*/
+
+
+// derived function:
+
 void LoadCompressedText(){				// works only in | BG_4BPP |
 
 	for(char c = 0; c < 128; c++){
@@ -54,21 +73,7 @@ void LoadCompressedText(){				// works only in | BG_4BPP |
 
 
 
-/*
-	SetPaletteBG(0, RGB(0, 0, 0));				// black (but actually transparent)
-	SetPaletteBG(1, RGB(31, 31, 31));			// white
-	SetPaletteBG(17, RGB(31, 0, 0));			// red
-	SetPaletteBG(1 + 16 * 2, RGB(0, 31, 0));	// green
 
-	int char_num_normal = 'a' | (0 << 12);		// white
-	int char_num_red = 'a' | (1 << 12);
-	int char_num_green = 'a' | (2 << 12);
-
-	SetTile(30,5,5, char_num_normal);
-	SetTile(30,5,6, char_num_red);
-	SetTile(30,5,7, char_num_green);
-
-*/
 // JIRI'S 32-bit FUNCTIONS =========================================================================
 
 // CopyToVRAM 32-bit version --------------------------------------------------

@@ -8,3 +8,5 @@ int BG2Y_offset= -16;			// holds value for reading REG_BG(X)VOFS, which are writ
 int BG1Y_offset= 24;
 
 int frameCounter = 0;
+
+GameProp* object[NUM_OBJECTS];

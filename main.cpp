@@ -26,40 +26,18 @@ int main() {
 
 
 
- 
-/* JIRI'S NOTES ===================================
 
-	
-		if (Button_Pressed(KEY_RIGHT)) {
-		
-			if (playerX < (SCREEN_WIDTH - 32)) {
-				playerX++;		
-			}
-		}
-		
-		else if (Button_Pressed(KEY_LEFT)) {
-		
-			if (playerX > 0) {
-				playerX--;			
-			}
-		}
-		
-		if (Button_Pressed(KEY_UP)) {
-		
-			if (playerY > 0) {
-				playerY--;			
-			}
-		}
-		
-		else if (Button_Pressed(KEY_DOWN)) {
-			if (playerY < (SCREEN_HEIGHT - 16)) {
-				playerY++;		
-			}
-		}
-		
-		SetObjectX(0, playerX);
-		SetObjectY(0, playerY);
-	
+/*
+// !!! BUG REPORT !!! ==============================================================================
 
+01/05/2014	After creating "enemy bullet" the sprite sheet char-block starts  appearing on the
+			screen. Seems like I am overwriting some graphical memory while going with bullet to
+			negative numbers!
+			
+	FIX:	Seems like bug was in enemy shooting while already off the screen. Adjusted
+			Enemy::shoot() to activate only while still on screen. No glitches since...
+			
+			
 
+// =================================================================================================
 */

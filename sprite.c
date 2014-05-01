@@ -8,15 +8,16 @@
 **    Player			[4]		              	  [4x2]    		        **
 **    Zeppelin        	[8,40]           		  [8x2,8x1]             **
 **    BOSS				[32]	              	  [8x8]    		        **
+**    Empty tile		[39]	              	  [1x1]    		        **
 **    Ship				[56]		              [8x1]    		        **
 **    Enemy				[72]		              [4x1]    		        **
 **    Bombs				[76,77,78,79]		      [1x1]    		        **
 **    Lightning			[88]		              [8x1]    		        **
 **    Land Explosion	[104]		              [4x4]    		        **
 **    Sea Explosion		[110]		              [2x4]    		        **
-**    Bullet Yellow		[108]		              [1x1]    		        **
-**    Bullet Red		[109]		              [1x1]    		        **
-**    Bullet Black		[124]		              [1x1]    		        **
+**    Bullet Yellow		[108]		              [1x1];[4x4px]         **
+**    Bullet Red		[109]		              [1x1];[4x4px]         **
+**    Bullet Black		[124]		              [1x1];[2x2px]         **
 **    Star				[125]		              [1x1]    		        **
 **    Balloon(health)	[140]		              [1x2]    		        **
 **    Balloon(bomb)		[141]		              [1x2]    		        **

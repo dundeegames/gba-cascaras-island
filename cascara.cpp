@@ -4,17 +4,19 @@
 
 // GAMEPROP -------------------------------------------------------------------
 
-GameProp::GameProp(int id, int x, int y, int w, int h, int shape, int size, int tile){	//(ID,coordX,coordY,width(pixels),height(pixels),shape,size,tile)
+//(ID, type, coordX,coordY,width(pixels),height(pixels),shape,size,tile)
+GameProp::GameProp(int id, entity e, int x, int y, int w, int h, int shape, int size, int tile){	
 
 	objNumber = id;
-	coordX = x;			// left
-	coordY = y;			// top
+	type = e;
+	coord.X = x;			// left
+	coord.Y = y;			// top
 	width = w;
 	height = h;
 	
 	SetObject(objNumber,
-	  ATTR0_SHAPE(shape) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(coordY),
-	  ATTR1_SIZE(size) | ATTR1_X(coordX),
+	  ATTR0_SHAPE(shape) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(coord.Y),
+	  ATTR1_SIZE(size) | ATTR1_X(coord.X),
 	  ATTR2_ID8(tile));
 	
 }
@@ -23,105 +25,159 @@ bool GameProp::isDead(){
 	return dead;
 }
 
-void GameProp::render(){
-	SetObjectX(objNumber, coordX);
-	SetObjectY(objNumber, coordY);
+void GameProp::kill(){
+	dead = true;
 }
+
+entity GameProp::getType(){
+	return type;
+}
+
+void GameProp::render(){
+	SetObjectX(objNumber, coord.X);
+	SetObjectY(objNumber, coord.Y);
+}
+
+GameProp::~GameProp(){											// set to 1x1 empty tile with X,Y out of screen
+	SetObject(objNumber,
+		  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(190),
+		  ATTR1_SIZE(0) | ATTR1_X(250),
+		  ATTR2_ID8(39));
+}
+
 // PLAYER ---------------------------------------------------------------------
 
-Player::Player(int id, int x, int y) : GameProp(id, x, y, 32, 16, 1, 2, 0){
-	drawScore();
-	drawLife();
-	drawSkill();	
-}
+//(ID, type, coordX,coordY,width(pixels),height(pixels),shape,size,tile)
+Player::Player(int id, int x, int y) : 
+	GameProp(id, player, x, y, 32, 16, 1, 2, 0){}
 
 
 void Player::update(){
 
+	if(coolDown > 0){
+		coolDown--;
+	}
+
 	// Check user input
 	if (Key_Pressed(KEY_UP)) {
-		if(coordY > 24){
-			coordY--;
+		if(coord.Y > 24){
+			coord.Y--;
 		}
 	}
 	
 	if (Key_Pressed(KEY_DOWN)) {
-		if(coordY < 108){
-			coordY++;
+		if(coord.Y < 108){
+			coord.Y++;
 		}
 	}
 	
 	if (Key_Pressed(KEY_LEFT)) {
-		if(coordX > 8){
-			coordX--;
+		if(coord.X > 8){
+			coord.X--;
 		}
 	}
 
 	if (Key_Pressed(KEY_RIGHT)) {
-		if(coordX < 200){
-			coordX++;
+		if(coord.X < 200){
+			coord.X++;
 		}
 	}
 	
 	if (Key_Pressed(KEY_A)) {
-		SetObjectTile(objNumber, ATTR2_ID8(4));
+		shoot();
 	}
 
 	if (Key_Pressed(KEY_B)) {
-		SetObjectTile(objNumber, ATTR2_ID8(0));
+		SetObjectTile(objNumber, ATTR2_ID8(4));
 	}
 	
 }
 
-
-void Player::drawScore(){
-
-	char buffer[20];
-	snprintf(buffer, sizeof buffer, "SCORE:%5d", score);
-	
-	DrawText(1, 1, 0, buffer);
-}
-
-
-void Player::drawLife(){
-
-	char buffer[20];
-	snprintf(buffer, sizeof buffer, "LIFE:%4d", life);
-
-	DrawText(1, 19, 0, buffer);
-}
-
-
-void Player::drawSkill(){
-
-	char buffer[20];
-	snprintf(buffer, sizeof buffer, "SKILL:%4d/100", skill);
-
-	DrawText(15, 19, 0, buffer);
+void Player::shoot(){
+	if(coolDown == 0){
+		for(int i = 0; i<NUM_OBJECTS; i++){
+			if(object[i] == 0){
+				object[i] = new Bullet(i, true, (coord.X + width + 4), (coord.Y + 4));
+				coolDown = 60;
+				break;
+			}
+		}
+	}
 }
 
 
 // ENEMY ----------------------------------------------------------------------
 
-Enemy::Enemy(int id, int x, int y) :
-	GameProp(id, x, y, 32, 8, 1, 1, 72){}
-
+//(ID, type, coordX,coordY,width(pixels),height(pixels),shape,size,tile)
+Enemy::Enemy(int id) :	GameProp(id, enemy, 250, (rand()%84)+24, 32, 8, 1, 1, 72){	
+	coolDown = rand()%60;
+}
 
 void Enemy::update(){
 
-	coordX--;
-	if(coordX < 0){
-		coordX += 512;
+	if(coolDown <= 0){
+		if((coord.X > 10) && (coord.X < SCREEN_WIDTH)){
+			shoot();
+		}
 	}
-	if((coordX > 400) && (coordX < 480)){
-		coordY = ((rand()%84)+24);
-		coordX = 250;
+	else{
+		coolDown--;
+	}
+
+	coord.X--;
+	if(coord.X < 0){
+		coord.X += 512;
+	}
+	if((coord.X > 400) && (coord.X < 480)){
+		coord.Y = ((rand()%84)+24);
+		coord.X = 250;
 	}
 
 }
 
+int Enemy::getScore(){
+	return score;
+}
 
+void Enemy::shoot(){
 
+	for(int i = 0; i<NUM_OBJECTS; i++){
+		if(object[i] == 0){
+			object[i] = new Bullet(i, false, (coord.X - 4), coord.Y);
+			coolDown = 120;
+			break;
+		}
+	}
+}
+
+// BULLET ---------------------------------------------------------------------
+
+//(ID, type, coordX,coordY,width(pixels),height(pixels),shape,size,tile)
+Bullet::Bullet(int id, bool f, int x, int y) :	GameProp(id, enemy, x, y, 2, 2, 0, 0, 124){		
+	myFriend = f;	
+}
+
+void Bullet::update(){
+
+	if(isDead() == false){
+		if(myFriend){
+			coord.X += 4;
+
+			if(coord.X > SCREEN_WIDTH){
+				kill();
+			}
+		}
+		else{
+			coord.X -= 2;
+			if(coord.X < 0){
+				coord.X = 250;		// get of the screen
+				coord.Y = 180;
+				kill();
+			}
+		}
+	}
+
+}
 
 // TIME -----------------------------------------------------------------------
 
@@ -153,42 +209,61 @@ void Time::drawTime(){
 	else{
 		snprintf(buffer, sizeof buffer, "TIME:%02d:%02d:%02d", minutes, seconds, frames);
 	}
-	DrawText(15, 1, 0, buffer);
+	Draw_Text(15, 1, 0, buffer);
 }
 
+
+// SCORE ----------------------------------------------------------------------
+
+void Score::updateLife(int k){
+	life += k;
+}		
+void Score::updateSkill(int k){
+	skill += k;
+}
+void Score::updateScore(int k){
+	score += k;
+}
+
+void Score::render(){
+	drawScore();
+	drawLife();
+	drawSkill();
+}
+
+void Score::drawScore(){
+
+	char buffer[20];
+	snprintf(buffer, sizeof buffer, "SCORE:%5d", score);
+	
+	Draw_Text(1, 1, 0, buffer);
+}
+
+
+void Score::drawLife(){
+
+	char buffer[20];
+	snprintf(buffer, sizeof buffer, "LIFE:%4d", life);
+
+	Draw_Text(1, 19, 0, buffer);
+}
+
+
+void Score::drawSkill(){
+
+	char buffer[20];
+	snprintf(buffer, sizeof buffer, "SKILL:%4d/100", skill);
+
+	Draw_Text(15, 19, 0, buffer);
+}
 
 
 // TEXT ============================================================================================
 
-/*
-// Draw \0-terminated string s at position (x, y) in colour colour.
-void DrawString8(int x, int y, int colour, const char *s) {
-	while (*s != '\0') {
-		DrawChar8(x, y, colour, *s);
-		x += 8;
-		s++;
-	}
-}
-
-// Then you can use it something like this...
-void SomeOtherFunction() {
-	int score = 42;
-
-	DrawString8(10, 10, 1, "Hello world!");
-	
-	// To print variables, use snprintf to produce a string, then print the string.
-	// (Look at the manual for "printf" to see how the % directives work.)
-	char buf[40];
-	snprintf(buf, sizeof buf, "Score is %03d", score);
-	DrawString8(10, 30, 1, buf);
-*/
-
-// ---------------------------------------------------------
-
 // 	values for colour (0-15):
 //	0-white, 1-yellow, 2-green, 3-red, 4-cyan, 5-blue, 6-pink,
 //	14-black, 15-brown
-void DrawText(int x, int y, int colour, const char string[]){
+void Draw_Text(int x, int y, int colour, const char string[]){
 
 	int i = 0;
 	
@@ -200,7 +275,7 @@ void DrawText(int x, int y, int colour, const char string[]){
 
 // ---------------------------------------------------------
 
-void ClearText(int x, int y, const char string[]){
+void Clear_Text(int x, int y, const char string[]){
 
 	int i = 0;
 	
@@ -212,7 +287,7 @@ void ClearText(int x, int y, const char string[]){
 
 // ---------------------------------------------------------
 
-void DrawButton(int x, int y, bool select, const char string[]){
+void Draw_Button(int x, int y, bool select, const char string[]){
 	
 	int i = 0;
 	
@@ -252,7 +327,7 @@ void DrawButton(int x, int y, bool select, const char string[]){
 
 // ---------------------------------------------------------
 
-void ClearButton(int x, int y, const char string[]){
+void Clear_Button(int x, int y, const char string[]){
 	
 	int i = 0;
 	
@@ -349,8 +424,6 @@ bool Fade_PaletteObj() {					// Reduce the value of colour palette
 			else b--;
 		}
 		
-
-		//SetPaletteObj(i, colour);
 		SetPaletteObj(i, RGB(r, g, b));
 	}
 
@@ -415,8 +488,6 @@ bool Rise_PaletteObj(const uint16_t data[256]) {
 			else b--;
 		}
 		
-
-		//SetPaletteObj(i, colour);
 		SetPaletteObj(i, RGB(r, g, b));
 	}
 	
@@ -579,7 +650,7 @@ void Play_Intro(){			// Play logo and sets menu
 					}
 				}
 				
-				BG1Y_offset = 4;				// rset BG1
+				BG1Y_offset = 4;				// reset BG1
 				REG_BG1VOFS = BG1Y_offset;
 				
 				BG2Y_offset = 0;				// reset BG2
@@ -720,16 +791,16 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case buttons:
-				DrawText(9, 7, 15, "Choose from");
-				DrawText(6, 9, 15, "following options");
+				Draw_Text(9, 7, 15, "Choose from");
+				Draw_Text(6, 9, 15, "following options");
 				
 				if (startSelect) {
-					DrawButton(8, 13, true, "START");
-					DrawButton(17, 13, false, "ABOUT");
+					Draw_Button(8, 13, true, "START");
+					Draw_Button(17, 13, false, "ABOUT");
 				}
 				else {
-					DrawButton(8, 13, false, "START");
-					DrawButton(17, 13, true, "ABOUT");
+					Draw_Button(8, 13, false, "START");
+					Draw_Button(17, 13, true, "ABOUT");
 				}
 
 				// Check user input
@@ -742,11 +813,11 @@ void Play_Intro(){			// Play logo and sets menu
 				}
 			
 				if (Key_Pressed(KEY_START)){
-					ClearText(9, 7, "Choose from");
-					ClearText(6, 9, "following options");
+					Clear_Text(9, 7, "Choose from");
+					Clear_Text(6, 9, "following options");
 				
-					ClearButton(8, 13, "START");
-					ClearButton(17, 13, "ABOUT");
+					Clear_Button(8, 13, "START");
+					Clear_Button(17, 13, "ABOUT");
 					
 					if(startSelect){
 						logoStage = end;
@@ -758,22 +829,22 @@ void Play_Intro(){			// Play logo and sets menu
 				break;
 				
 			case about:
-				DrawText(6, 4, 5, "Created by Jiri Klic");
-				DrawText(6, 6, 5, "@ Abertay, April 2014");
-				DrawText(6, 10, 15, "Press SELECT to return");
+				Draw_Text(6, 4, 5, "Created by Jiri Klic");
+				Draw_Text(6, 6, 5, "@ Abertay, April 2014");
+				Draw_Text(6, 10, 15, "Press SELECT to return");
 				
-				DrawButton(12, 13, false, "SELECT");
+				Draw_Button(12, 13, false, "SELECT");
 				
 				// Check user input
 				if (Key_Pressed(KEY_SELECT)){
-					DrawButton(12, 13, true, "SELECT");
+					Draw_Button(12, 13, true, "SELECT");
 					Slow_Time(12);									// wait for MAX/60 seconds
 				
-					ClearText(6, 4, "Created by Jiri Klic");
-					ClearText(6, 6, "@ Abertay, April 2014");
-					ClearText(6, 10, "Press SELECT to return");
+					Clear_Text(6, 4, "Created by Jiri Klic");
+					Clear_Text(6, 6, "@ Abertay, April 2014");
+					Clear_Text(6, 10, "Press SELECT to return");
 					
-					ClearButton(12, 13, "SELECT");
+					Clear_Button(12, 13, "SELECT");
 					
 					startSelect = true;
 					
@@ -803,39 +874,69 @@ void Play_Intro(){			// Play logo and sets menu
 
 // GAME ============================================================================================
 
-// ----------------------------------------------------------------------------
-
-
 // Collision Detection: returns true if objects collide
 bool Hit_Test(GameProp* obj1, GameProp* obj2){
-	if ((obj1->coordX + obj1->width) < (obj2->coordX)) return false;
-	if ((obj2->coordX + obj2->width) < (obj1->coordX)) return false;
-	if ((obj1->coordY + obj1->height) < (obj2->coordY)) return false;
-	if ((obj2->coordY + obj2->height) < (obj1->coordY)) return false;
+	if ((obj1->coord.X + obj1->width) < (obj2->coord.X)) return false;
+	if ((obj2->coord.X + obj2->width) < (obj1->coord.X)) return false;
+	if ((obj1->coord.Y + obj1->height) < (obj2->coord.Y)) return false;
+	if ((obj2->coord.Y + obj2->height) < (obj1->coord.Y)) return false;
 	return true;
 }
 
+// ----------------------------------------------------------------------------
 
-// USE WITH SORT ALGORITHM ON object[128]
+void Check_Collision(){
+
+	
+	// Collision test against Player ---------
+	Player* player = (Player*)object[0];				// (DerivedClass*)instance;
+	
+	for(int i=1; i<NUM_OBJECTS; i++){
+		if(Hit_Test(object[0], object[i])){
+			
+
+			object[i]->kill();						
+		}		
+	}
+
+	for(int i = 0; i < (NUM_OBJECTS-1); i++){
+		for(int j = i+1; j < NUM_OBJECTS; j++){
+			if(Hit_Test(object[i], object[j])){
+				if(i == 0){
+					//object[i]->updateScore(object[j]->getScore());
+					//object[j]->kill();						
+				}
+			}			
+		}		
+	}
+
+}
+
+
+// ----------------------------------------------------------------------------
+
+void Collect_Dead(){
+
+	for(int i = 0; i < NUM_OBJECTS; i++){
+		if(object[i]->isDead()){
+			delete object[i];
+			object[i] = 0;
+		}
+	}
+}
 
 
 // ----------------------------------------------------------------------------
 
 void Play_Game(){
 
-	srand((unsigned)frameCounter);
+	srand((unsigned)frameCounter);		// seed rand()
 
 /*
 // PSEUDOCODE ------------------
 
-GameProp* object[128];
-
-for(int i = 0; i<128; i++){
-	object[i] = 0;
-}
-
 IF(object[i] != 0){
-	object[i].updae();
+	object[i].update();
 }
 ELSE {CONTINUE}
 
@@ -847,14 +948,19 @@ IF(object[i].isDead()){
 // -----------------------------
 */
 	Time* time = new Time();
-	Player* player = new Player(0,8,32);
-	Enemy* enemy = new Enemy(1,250,32);
-
+	Score* score = new Score();
 	
-	time->setTime(0, 0, 99);			//test values
+	for(int i = 0; i<NUM_OBJECTS; i++){		// initialize all object addresses to 0
+		object[i] = 0;
+	}
+
+	object[0] = new Player(0,8,32);
+	object[1] = new Enemy(1);
+	
+	time->setTime(0, 0, 99);				//test values
 	time->drawTime();
+	score->render();
 
-	
 	REG_BG0VOFS = 4;	
 
 
@@ -864,19 +970,31 @@ IF(object[i].isDead()){
 		
 		// UPDATE ------------------
 		time->update();
-		player->update();
-		enemy->update();
+
+		for(int i = 0; i < NUM_OBJECTS; i++){
+			if(object[i] != 0){
+				object[i]->update();
+			}
+		}
 
 		
 		// COLLISION ---------------
+		Check_Collision();
 		
 		
+		// GARBAGE COLLECTION ------
+		Collect_Dead();
 		
 		
 		// RENDER ------------------
-		player->render();
-		enemy->render();
+		for(int i = 0; i < NUM_OBJECTS; i++){
+			if(object[i] != 0){
+				object[i]->render();
+			}
+		}
+		
 		time->drawTime();
+		score->render();
 
 		
 		// SYSTEM ------------------
@@ -888,9 +1006,18 @@ IF(object[i].isDead()){
 			REG_BG3HOFS = BG3X_offset;
 		}
 		
+	} // end of while ---
+
+	
+	// release all memory ---------------
+	delete time;
+	delete score;
+	
+	for(int i = 0; i < NUM_OBJECTS; i++){
+		if(object[i] != 0){
+			delete object[i];
+			object[i] = 0;
+		}
 	}
 
-	delete time;
-	delete player;
-	delete enemy;
 }

@@ -1,9 +1,12 @@
-/* 
- * Cascara's Island for GBA 2013
- * Header
- * by Jiri Klic
- * 
- */
+/*
+**************************************************************************
+**                                                                      **
+**                    Cascara's Island for GBA, 2014                    **
+**                         Header by Jiri Klic                          **
+**                                                                      **
+**************************************************************************
+*/
+
 
 #ifndef CASCARA_H
 #define CASCARA_H
@@ -16,54 +19,18 @@
 #include "gbaextend.h"
 
 
+// ENUMERATION ------------------------------------------------------
 
-// GRAPHIC HEADERS --------------------------------------------------
-
-#define logoTilesLen 16384
-extern const unsigned short logoTiles[8192];
-
-#define logoPalLen 512
-extern const unsigned short logoPal[256];
+enum entity {player, enemy, bullet};
 
 
-extern const uint8_t blank_tile[64];
+// STRUCTURES -------------------------------------------------------
 
-#define charblock2TilesLen 16384
-extern const unsigned short charblockTiles[8192];
+struct COORD{	// holds the coordinates of an object
+	int X;
+	int Y;
+};
 
-#define charblock2PalLen 512
-extern const unsigned short charblockPal[256];
-
-#define spriteTilesLen 16384
-extern const unsigned short spriteTiles[8192];
-
-#define spritePalLen 512
-extern const unsigned short spritePal[256];
-
-
-extern const uint16_t seaSB[1024];
-
-
-extern const uint16_t menuSB[1024];
-
-// Easter Egg --------
-#define easterEggTilesLen 16384
-extern const unsigned short easterEggTiles[8192];
-
-#define easterEggPalLen 512
-extern const unsigned short easterEggPal[256];
-
-
-// GLOBAL VARIABLE --------------------------------------------------
-
-extern int BG3X_offset;				// holds value for reading REG_BG(X)HOFS, which are write only
-
-extern int BG2X_offset;
-
-extern int BG2Y_offset;				// holds value for reading REG_BG(X)VOFS, which are write only
-extern int BG1Y_offset;
-
-extern int frameCounter;
 
 // CLASS PROTOTYPES -------------------------------------------------
 
@@ -78,28 +45,31 @@ class GameProp {
 	public:
 	
 		// (ID,coordX,coordY,width(pixels),height(pixels),shape,size,tile)
-		GameProp(int id, int x, int y, int w, int h, int sp, int sz, int tile);	
+		GameProp(int id, entity e, int x, int y, int w, int h, int sp, int sz, int tile);	
 		
 		bool isDead();
+		void kill();
+		entity getType();
+		
 		
 		virtual void update() = 0;
 		
 		void render();
 
 		
-		~GameProp(){}
+		~GameProp();
 
 	private:
 	
-		//GameProp();						// prevents using of general constructor
+		//GameProp();					// prevents using of general constructor
 		
 		void move(int dx, int dy);		// move player on the screen
 		
 	protected:
 		
+		entity type;
+		COORD coord;
 		int objNumber;
-		int coordX;			// left
-		int coordY;			// top
 		int width;
 		int height;
 };
@@ -109,23 +79,18 @@ class GameProp {
 
 class Player : public GameProp{
 
-		int life = 100;
-		int skill = 1;
-		int score = 9999;
+		int coolDown = 0;
 
 	public:
 	
 		Player(int id, int x, int y);
 	
 		void update();
-		
-		//void drawStats();
 
 	private:
 		
-		void drawScore();
-		void drawLife();
-		void drawSkill();
+		void shoot();
+
 };
 
 // ENEMY -------------
@@ -133,43 +98,40 @@ class Player : public GameProp{
 class Enemy : public GameProp{
 
 		int score = 20;
-
+		int coolDown;
+		
 	public:
-	
-		Enemy(int id, int x, int y);
+
+		Enemy(int id);
 	
 		void update();
-
+		int getScore();
 
 	private:
-
+		
+		void shoot();
 };
-
-
-
 
 
 // BULLET ------------
-/*
-class Bullet {
+
+class Bullet : public GameProp{
 		
-		int dx;				// x direction
-		int dy;				// y direction
-		bool friend;
+		bool myFriend;					// true if Player's bullet, false if Enemy's
 
 	public:
 				
-		bullet(int x, int y, int _dx, int _dy);		// constructor
-		
+		Bullet(int id, bool f, int x, int y);		// constructor
 		bool isFriend();
+		void update();
 	
-		~bullet(){}						// destructor
+		//~bullet(){}					// destructor
 
 	private:
-		bullet();						// prevents using of general constructor
+		//bullet();						// prevents using of general constructor
 		
 };
-*/
+
 
 // TIME -------------
 
@@ -193,17 +155,43 @@ class Time {
 
 };
 
+
+// SCORE ------------
+
+class Score {
+		
+		int life = 100;
+		int skill = 1;
+		int score = 0;
+
+	public:
+		
+		void updateLife(int k);		
+		void updateSkill(int k);
+		void updateScore(int k);
+		
+		void render();
+		
+				
+
+	private:
+		
+		void drawScore();
+		void drawLife();
+		void drawSkill();
+};
+
 // FUNCTION PROTOTYPES ----------------------------------------------
 
 // FONT --------------
 
-void DrawText(int x, int y, int colour, const char string[]);
+void Draw_Text(int x, int y, int colour, const char string[]);
 
-void ClearText(int x, int y, const char string[]);
+void Clear_Text(int x, int y, const char string[]);
 
-void DrawButton(int x, int y, bool select, const char string[]);
+void Draw_Button(int x, int y, bool select, const char string[]);
 
-void ClearButton(int x, int y, const char string[]);
+void Clear_Button(int x, int y, const char string[]);
 
 // KEYS -----------
 
@@ -236,8 +224,54 @@ void Set_Background();
 
 void Play_Intro();
 
+
+void Check_Collision();
+
+
+void Collect_Dead();
+
 // The entry point for the game
 void Play_Game();
+
+
+// GLOBAL VARIABLES -------------------------------------------------
+
+extern int BG3X_offset;				// holds value for reading REG_BG(X)HOFS, which are write only
+
+extern int BG2X_offset;
+
+extern int BG2Y_offset;				// holds value for reading REG_BG(X)VOFS, which are write only
+extern int BG1Y_offset;
+
+extern int frameCounter;
+
+extern GameProp* object[NUM_OBJECTS];
+
+
+// GRAPHIC HEADERS --------------------------------------------------
+
+extern const unsigned short logoTiles[8192];
+
+extern const unsigned short logoPal[256];
+
+extern const uint8_t blank_tile[64];
+
+extern const unsigned short charblockTiles[8192];
+
+extern const unsigned short charblockPal[256];
+
+extern const unsigned short spriteTiles[8192];
+
+extern const unsigned short spritePal[256];
+
+extern const uint16_t seaSB[1024];
+
+extern const uint16_t menuSB[1024];
+
+// Easter Egg --------
+extern const unsigned short easterEggTiles[8192];
+
+extern const unsigned short easterEggPal[256];
 
 // ------------------------------------------------------------------
 
