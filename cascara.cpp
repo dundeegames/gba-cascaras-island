@@ -149,7 +149,7 @@ void Enemy::shoot(){
 // BULLET ---------------------------------------------------------------------
 
 //(ID, type, coordX,coordY,width(pixels),height(pixels),shape,size,tile)
-Bullet::Bullet(int id, bool f, int x, int y) :	GameProp(id, enemy, x, y, 2, 2, 0, 0, 124){		
+Bullet::Bullet(int id, bool f, int x, int y) :	GameProp(id, bullet, x, y, 2, 2, 0, 0, 124){		
 	myFriend = f;	
 }
 
@@ -922,11 +922,38 @@ void Check_Collision(){
 
 void Collect_Dead(){
 
-	for(int i = 1; i < NUM_OBJECTS; i++){
+	entity objectType;
+
+	for(int i = 0; i < NUM_OBJECTS; i++){
+	
 		if(object[i] != 0){
+		
 			if(object[i]->isDead()){
-				delete object[i];
-				object[i] = 0;
+				
+				objectType = object[i]->getType();
+				
+				switch(objectType){
+				
+					case player:
+						delete object[i];
+						object[i] = 0;
+						break;
+				
+					case enemy:
+						score->updateScore(20);
+						delete object[i];
+						object[i] = 0;
+						break;
+				
+					case bullet:
+						delete object[i];
+						object[i] = 0;
+						break;
+				
+					default:
+						Draw_Text(20, 50, 3, "Error: Collect_Dead();");
+						break;
+				}
 			}
 		}
 	}

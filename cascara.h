@@ -39,6 +39,7 @@ struct COORD{	// holds the coordinates of an object
 class GameProp {
 		
 		bool dead = false;
+		entity type;
 		
 		friend bool Hit_Test(GameProp* obj1, GameProp* obj2);
 		
@@ -67,7 +68,6 @@ class GameProp {
 		
 	protected:
 		
-		entity type;
 		COORD coord;
 		int objNumber;
 		int width;
