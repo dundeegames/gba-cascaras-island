@@ -10,3 +10,5 @@ int BG1Y_offset= 24;
 int frameCounter = 0;
 
 GameProp* object[NUM_OBJECTS];
+
+Score* score = new Score();

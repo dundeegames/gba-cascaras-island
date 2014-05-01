@@ -135,10 +135,6 @@ void Enemy::update(){
 
 }
 
-int Enemy::getScore(){
-	return score;
-}
-
 void Enemy::shoot(){
 
 	for(int i = 0; i<NUM_OBJECTS; i++){
@@ -217,6 +213,9 @@ void Time::drawTime(){
 
 void Score::updateLife(int k){
 	life += k;
+	if(life < 0){
+		life = 0;
+	}
 }		
 void Score::updateSkill(int k){
 	skill += k;
@@ -889,25 +888,31 @@ void Check_Collision(){
 
 	
 	// Collision test against Player ---------
-	Player* player = (Player*)object[0];				// (DerivedClass*)instance;
-	
 	for(int i=1; i<NUM_OBJECTS; i++){
-		if(Hit_Test(object[0], object[i])){
-			
-
-			object[i]->kill();						
-		}		
+		if(object[i] != 0){
+			if(Hit_Test(object[0], object[i])){
+				score->updateLife(-10);
+				object[i]->kill();						
+			}
+		}
 	}
 
-	for(int i = 0; i < (NUM_OBJECTS-1); i++){
-		for(int j = i+1; j < NUM_OBJECTS; j++){
-			if(Hit_Test(object[i], object[j])){
-				if(i == 0){
-					//object[i]->updateScore(object[j]->getScore());
-					//object[j]->kill();						
+	// Collision test of everything else -----
+	for(int i = 1; i < (NUM_OBJECTS-1); i++){
+	
+		if(object[i] != 0){
+		
+			for(int j = i+1; j < NUM_OBJECTS; j++){
+			
+				if(object[j] != 0){
+				
+					if(Hit_Test(object[i], object[j])){
+						object[i]->kill();
+						object[j]->kill();
+					}
 				}
-			}			
-		}		
+			}
+		}			
 	}
 
 }
@@ -917,10 +922,12 @@ void Check_Collision(){
 
 void Collect_Dead(){
 
-	for(int i = 0; i < NUM_OBJECTS; i++){
-		if(object[i]->isDead()){
-			delete object[i];
-			object[i] = 0;
+	for(int i = 1; i < NUM_OBJECTS; i++){
+		if(object[i] != 0){
+			if(object[i]->isDead()){
+				delete object[i];
+				object[i] = 0;
+			}
 		}
 	}
 }
@@ -932,23 +939,7 @@ void Play_Game(){
 
 	srand((unsigned)frameCounter);		// seed rand()
 
-/*
-// PSEUDOCODE ------------------
-
-IF(object[i] != 0){
-	object[i].update();
-}
-ELSE {CONTINUE}
-
-IF(object[i].isDead()){
-	delete object[i];
-	object[i] = 0;
-}
-
-// -----------------------------
-*/
 	Time* time = new Time();
-	Score* score = new Score();
 	
 	for(int i = 0; i<NUM_OBJECTS; i++){		// initialize all object addresses to 0
 		object[i] = 0;

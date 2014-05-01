@@ -97,7 +97,6 @@ class Player : public GameProp{
 
 class Enemy : public GameProp{
 
-		int score = 20;
 		int coolDown;
 		
 	public:
@@ -105,7 +104,6 @@ class Enemy : public GameProp{
 		Enemy(int id);
 	
 		void update();
-		int getScore();
 
 	private:
 		
@@ -247,6 +245,7 @@ extern int frameCounter;
 
 extern GameProp* object[NUM_OBJECTS];
 
+extern Score* score;
 
 // GRAPHIC HEADERS --------------------------------------------------
 
