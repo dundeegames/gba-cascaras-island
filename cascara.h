@@ -21,7 +21,7 @@
 
 // ENUMERATION ------------------------------------------------------
 
-enum entity {player, enemy, bullet};
+enum entity {player, enemy, bullet, explosion};
 
 
 // STRUCTURES -------------------------------------------------------
@@ -61,8 +61,6 @@ class GameProp {
 		~GameProp();
 
 	private:
-	
-		//GameProp();					// prevents using of general constructor
 		
 		void move(int dx, int dy);		// move player on the screen
 		
@@ -115,7 +113,7 @@ class Enemy : public GameProp{
 
 class Bullet : public GameProp{
 		
-		bool myFriend;					// true if Player's bullet, false if Enemy's
+		bool myFriend;								// true if Player's bullet, false if Enemy's
 
 	public:
 				
@@ -123,10 +121,27 @@ class Bullet : public GameProp{
 		bool isFriend();
 		void update();
 	
-		//~bullet(){}					// destructor
+	private:
+		
+};
+
+
+// EXPLOSION ---------
+
+class Explosion : public GameProp{
+		
+		bool freeFall = true;						// true if Explosion is in free fall
+		int speedX;
+		int counter = 0;
+		const int TILES[24] = {160, 162, 164, 166, 168, 170, 172, 174, 192, 194, 196, 198, 200, 202, 204, 206, 224, 226, 228, 230, 232, 234, 236, 238};
+
+	public:
+				
+		Explosion(int id, int x, int y, int dx);	// constructor
+		
+		void update();
 
 	private:
-		//bullet();						// prevents using of general constructor
 		
 };
 
@@ -135,7 +150,7 @@ class Bullet : public GameProp{
 
 class Time {
 		
-		int frames = 0;			// 60/second
+		int frames = 0;								// 60/second
 		int seconds = 0;
 		int minutes = 0;
 		
@@ -169,8 +184,6 @@ class Score {
 		void updateScore(int k);
 		
 		void render();
-		
-				
 
 	private:
 		
@@ -222,11 +235,11 @@ void Set_Background();
 
 void Play_Intro();
 
-
 void Check_Collision();
 
-
 void Collect_Dead();
+
+void Spawn_Enemy();
 
 // The entry point for the game
 void Play_Game();
@@ -246,6 +259,8 @@ extern int frameCounter;
 extern GameProp* object[NUM_OBJECTS];
 
 extern Score* score;
+
+extern int difficulty;				// value 1 or more = to number of enemies spawned at the same time
 
 // GRAPHIC HEADERS --------------------------------------------------
 

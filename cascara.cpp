@@ -26,7 +26,32 @@ bool GameProp::isDead(){
 }
 
 void GameProp::kill(){
-	dead = true;
+
+	switch(type){
+	
+		case player:
+			dead = true;
+			break;
+	
+		case enemy:
+			for(int i = 0; i<NUM_OBJECTS; i++){
+				if(object[i] == 0){
+					object[i] = new Explosion(i, coord.X, coord.Y, -1);
+					break;
+				}
+			}
+			dead = true;;
+			break;
+	
+		case bullet:
+		case explosion:
+			dead = true;
+			break;
+	
+		default:
+			Draw_Text(20, 50, 3, "Error: Collect_Dead();");
+			break;
+	}
 }
 
 entity GameProp::getType(){
@@ -98,7 +123,7 @@ void Player::shoot(){
 		for(int i = 0; i<NUM_OBJECTS; i++){
 			if(object[i] == 0){
 				object[i] = new Bullet(i, true, (coord.X + width + 4), (coord.Y + 4));
-				coolDown = 60;
+				coolDown = 10;
 				break;
 			}
 		}
@@ -109,7 +134,7 @@ void Player::shoot(){
 // ENEMY ----------------------------------------------------------------------
 
 //(ID, type, coordX,coordY,width(pixels),height(pixels),shape,size,tile)
-Enemy::Enemy(int id) :	GameProp(id, enemy, 250, (rand()%84)+24, 32, 8, 1, 1, 72){	
+Enemy::Enemy(int id) :	GameProp(id, enemy, (rand()%50)+250, (rand()%84)+24, 32, 8, 1, 1, 72){	
 	coolDown = rand()%60;
 }
 
@@ -117,7 +142,9 @@ void Enemy::update(){
 
 	if(coolDown <= 0){
 		if((coord.X > 10) && (coord.X < SCREEN_WIDTH)){
-			shoot();
+			if((rand()%100) <= difficulty){
+				shoot();
+			}
 		}
 	}
 	else{
@@ -140,7 +167,7 @@ void Enemy::shoot(){
 	for(int i = 0; i<NUM_OBJECTS; i++){
 		if(object[i] == 0){
 			object[i] = new Bullet(i, false, (coord.X - 4), coord.Y);
-			coolDown = 120;
+			coolDown = 240 - (difficulty*20);
 			break;
 		}
 	}
@@ -173,6 +200,73 @@ void Bullet::update(){
 		}
 	}
 
+}
+
+
+// EXPLOSION ------------------------------------------------------------------
+
+//(ID, type, coordX,coordY,width(pixels),height(pixels),shape,size,tile)
+Explosion::Explosion(int id, int x, int y, int dx) : GameProp(id, explosion, x, y, 16, 16, 0, 1, 160){		
+	speedX = dx;
+}
+
+void Explosion::update(){
+
+	int tempTile;
+
+	if(freeFall == true){
+	
+		if (!(frameCounter%2)){			// slow down the animation
+		
+			coord.X += speedX;
+			coord.Y += 2;
+			if(coord.X < 0){
+				coord.X += 512;
+			}
+			if((coord.X > 400) && (coord.X < 480)){
+				kill();
+			}			
+			
+			if(counter < 23){
+				counter++;
+				tempTile = TILES[counter];
+				SetObjectTile(objNumber, ATTR2_ID8(tempTile));
+			}
+			else{
+				kill();
+			}
+
+			if(coord.Y > 96){
+			
+				coord.Y = 96;
+				
+				SetObject(objNumber,
+				  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(coord.Y),
+				  ATTR1_SIZE(2) | ATTR1_X(coord.X),
+				  ATTR2_ID8(110));
+				  
+				freeFall = false;
+				counter = 0;			// reset counter
+			}
+		}
+	}
+	else{
+		if (!(frameCounter%3)){			// scrolling with the sea
+			
+			counter++;
+			if(counter > 10){			// 20x3 -> 60f (1 second)
+				kill();
+			}
+			coord.X--;
+			
+			if(coord.X < 0){
+				coord.X += 512;
+			}
+			if((coord.X > 400) && (coord.X < 480)){
+				kill();
+			}
+		}
+	}
 }
 
 // TIME -----------------------------------------------------------------------
@@ -890,9 +984,11 @@ void Check_Collision(){
 	// Collision test against Player ---------
 	for(int i=1; i<NUM_OBJECTS; i++){
 		if(object[i] != 0){
-			if(Hit_Test(object[0], object[i])){
-				score->updateLife(-10);
-				object[i]->kill();						
+			if(object[i]->getType() != explosion){					// disregard explosion objects
+				if(Hit_Test(object[0], object[i])){
+					score->updateLife(-10);
+					object[i]->kill();						
+				}
 			}
 		}
 	}
@@ -900,15 +996,21 @@ void Check_Collision(){
 	// Collision test of everything else -----
 	for(int i = 1; i < (NUM_OBJECTS-1); i++){
 	
-		if(object[i] != 0){
+		if(object[i] != 0){											// skip check with NULL pointers
 		
-			for(int j = i+1; j < NUM_OBJECTS; j++){
-			
-				if(object[j] != 0){
+			if(object[i]->getType() != explosion){					// disregard explosion objects
+		
+				for(int j = i+1; j < NUM_OBJECTS; j++){
 				
-					if(Hit_Test(object[i], object[j])){
-						object[i]->kill();
-						object[j]->kill();
+					if(object[j] != 0){								// skip check with NULL pointers
+					
+						if(object[j]->getType() != explosion){		// disregard explosion objects
+					
+							if(Hit_Test(object[i], object[j])){
+								object[i]->kill();
+								object[j]->kill();
+							}
+						}
 					}
 				}
 			}
@@ -946,6 +1048,7 @@ void Collect_Dead(){
 						break;
 				
 					case bullet:
+					case explosion:
 						delete object[i];
 						object[i] = 0;
 						break;
@@ -962,6 +1065,31 @@ void Collect_Dead(){
 
 // ----------------------------------------------------------------------------
 
+void Spawn_Enemy(){
+
+	// count enemies first
+	int tempCounter = 0;
+	
+	for(int i = 0; i<NUM_OBJECTS; i++){
+		if(object[i]->getType() == enemy){
+			tempCounter++;
+		}	
+	}	
+	
+	// compare with difficulty and top up
+	while(tempCounter < difficulty){
+		for(int i = 0; i<NUM_OBJECTS; i++){
+			if(object[i] == 0){
+				object[i] = new Enemy(i);
+				break;
+			}
+		}
+		tempCounter++;
+	}
+	
+}
+// ----------------------------------------------------------------------------
+
 void Play_Game(){
 
 	srand((unsigned)frameCounter);		// seed rand()
@@ -973,9 +1101,10 @@ void Play_Game(){
 	}
 
 	object[0] = new Player(0,8,32);
-	object[1] = new Enemy(1);
+	Spawn_Enemy();
+	//object[1] = new Enemy(1);
 	
-	time->setTime(0, 0, 99);				//test values
+	//time->setTime(0, 0, 99);				//test values
 	time->drawTime();
 	score->render();
 
@@ -1002,6 +1131,10 @@ void Play_Game(){
 		
 		// GARBAGE COLLECTION ------
 		Collect_Dead();
+		
+
+		// SPAWN NEW ENEMIES -------
+		Spawn_Enemy();
 		
 		
 		// RENDER ------------------

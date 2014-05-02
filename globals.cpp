@@ -12,3 +12,5 @@ int frameCounter = 0;
 GameProp* object[NUM_OBJECTS];
 
 Score* score = new Score();
+
+int difficulty = 3;				// value 1 or more = to number of enemies spawned at the same time
