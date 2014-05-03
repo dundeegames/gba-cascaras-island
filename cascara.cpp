@@ -13,6 +13,7 @@ GameProp::GameProp(int id, entity e, int x, int y, int w, int h, int shape, int 
 	coord.Y = y;			// top
 	width = w;
 	height = h;
+	collision = all;
 	
 	SetObject(objNumber,
 	  ATTR0_SHAPE(shape) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(coord.Y),
@@ -29,20 +30,30 @@ void GameProp::kill(){
 
 	switch(type){
 	
-		case player:
+		case myPlane:
+			for(int i = 0; i<NUM_OBJECTS; i++){
+				if(object[i] == 0){
+					object[i] = new Explosion(i, coord.X, coord.Y, 1);
+					break;
+				}
+			}
 			dead = true;
 			break;
 	
 		case enemy:
-			for(int i = 0; i<NUM_OBJECTS; i++){
-				if(object[i] == 0){
-					object[i] = new Explosion(i, coord.X, coord.Y, -1);
-					break;
+			if((coord.X < 250) || (coord.X > 480)){
+				for(int i = 0; i<NUM_OBJECTS; i++){
+					if(object[i] == 0){
+						object[i] = new Explosion(i, coord.X, coord.Y, -1);
+						break;
+					}
 				}
 			}
-			dead = true;;
+			dead = true;
 			break;
-	
+			
+		case balloonH:
+		case balloonB:
 		case bullet:
 		case explosion:
 			dead = true;
@@ -56,6 +67,14 @@ void GameProp::kill(){
 
 entity GameProp::getType(){
 	return type;
+}
+
+physics GameProp::collide(){
+	return collision;
+}
+
+int GameProp::getDamage(){
+	return damage;
 }
 
 void GameProp::render(){
@@ -73,8 +92,10 @@ GameProp::~GameProp(){											// set to 1x1 empty tile with X,Y out of screen
 // PLAYER ---------------------------------------------------------------------
 
 //(ID, type, coordX,coordY,width(pixels),height(pixels),shape,size,tile)
-Player::Player(int id, int x, int y) : 
-	GameProp(id, player, x, y, 32, 16, 1, 2, 0){}
+Player::Player(int id, int x, int y) : GameProp(id, myPlane, x, y, 32, 16, 1, 2, 0){
+
+	coolDown = 0;
+}
 
 
 void Player::update(){
@@ -113,7 +134,7 @@ void Player::update(){
 	}
 
 	if (Key_Pressed(KEY_B)) {
-		SetObjectTile(objNumber, ATTR2_ID8(4));
+		score->dropBomb();
 	}
 	
 }
@@ -131,11 +152,73 @@ void Player::shoot(){
 }
 
 
+// BALLOON --------------------------------------------------------------------
+
+//(ID, type(balloonH/balloonB), coordX,coordY,width(pixels),height(pixels),shape,size,tile)
+Balloon::Balloon(int id, entity e) :	GameProp(id, e, (rand()%50)+250, (rand()%84)+24, 8, 16, 2, 0, 140){	
+	speedY = 0;
+	collision = player;
+	if(e == balloonB){
+		damage = 0;
+		SetObjectTile(id, ATTR2_ID8(141));
+	}
+	else{
+		damage = -30;
+	}
+}
+
+void Balloon::update(){
+
+	int tempVar;
+
+	if(!(frameCounter%60)){		// randomly choose vertical speed every 60f
+	
+		tempVar = rand()%3;
+		switch(tempVar){
+			case 0:		speedY = -1;	break;
+			case 1:		speedY = 0;		break;
+			case 2:		speedY = 1;		break;		
+		}
+	}
+
+	coord.X--;
+	if(coord.X < 0){
+		coord.X += 512;
+	}
+	if((coord.X > 400) && (coord.X < 480)){
+		kill();
+	}
+	
+	switch(speedY){
+		case -1:
+			if (!(frameCounter%3)){			// slow down vertical movement
+				if(coord.Y > 24){
+					coord.Y--;
+				}
+			}
+			break;
+			
+		case 0:
+			break;
+			
+		case 1:
+			if (!(frameCounter%3)){			// slow down vertical movement
+				if(coord.Y < 108){
+					coord.Y++;
+				}
+			}
+			break;		
+	}
+
+}
+
+
 // ENEMY ----------------------------------------------------------------------
 
 //(ID, type, coordX,coordY,width(pixels),height(pixels),shape,size,tile)
 Enemy::Enemy(int id) :	GameProp(id, enemy, (rand()%50)+250, (rand()%84)+24, 32, 8, 1, 1, 72){	
 	coolDown = rand()%60;
+	damage = 10;
 }
 
 void Enemy::update(){
@@ -156,8 +239,7 @@ void Enemy::update(){
 		coord.X += 512;
 	}
 	if((coord.X > 400) && (coord.X < 480)){
-		coord.Y = ((rand()%84)+24);
-		coord.X = 250;
+		kill();
 	}
 
 }
@@ -177,7 +259,15 @@ void Enemy::shoot(){
 
 //(ID, type, coordX,coordY,width(pixels),height(pixels),shape,size,tile)
 Bullet::Bullet(int id, bool f, int x, int y) :	GameProp(id, bullet, x, y, 2, 2, 0, 0, 124){		
-	myFriend = f;	
+	myFriend = f;
+	
+	if(myFriend){
+		damage = 0;
+	}
+	else{
+		collision = player;
+		damage = 5;
+	}
 }
 
 void Bullet::update(){
@@ -207,7 +297,10 @@ void Bullet::update(){
 
 //(ID, type, coordX,coordY,width(pixels),height(pixels),shape,size,tile)
 Explosion::Explosion(int id, int x, int y, int dx) : GameProp(id, explosion, x, y, 16, 16, 0, 1, 160){		
+	collision = none;
+	freeFall = true;
 	speedX = dx;
+	counter = 0;
 }
 
 void Explosion::update(){
@@ -236,7 +329,7 @@ void Explosion::update(){
 				kill();
 			}
 
-			if(coord.Y > 96){
+			if(coord.Y > 112){
 			
 				coord.Y = 96;
 				
@@ -270,6 +363,13 @@ void Explosion::update(){
 }
 
 // TIME -----------------------------------------------------------------------
+
+Time::Time(){
+	frames = 0;								// 60/second
+	seconds = 0;
+	minutes = 0;
+}
+
 
 void Time::setTime(int f, int s, int m){		// initialize time
 	frames = f;									// 60/second
@@ -305,8 +405,19 @@ void Time::drawTime(){
 
 // SCORE ----------------------------------------------------------------------
 
+Score::Score(){
+	life = 100;
+	skill = 1;
+	score = 0;
+	carryBomb = true;
+}
+
+int Score::getLife(){
+	return life;
+}
+
 void Score::updateLife(int k){
-	life += k;
+	life -= k;
 	if(life < 0){
 		life = 0;
 	}
@@ -316,6 +427,20 @@ void Score::updateSkill(int k){
 }
 void Score::updateScore(int k){
 	score += k;
+}
+
+bool Score::hasBomb(){
+	return carryBomb;
+}
+
+void Score::getBomb(){
+	SetObjectTile(0, ATTR2_ID8(0));		// update player's sprite (not sure about close coupling)
+	carryBomb = true;
+}
+
+void Score::dropBomb(){
+	SetObjectTile(0, ATTR2_ID8(4));		// update player's sprite (not sure about close coupling)
+	carryBomb = false;
 }
 
 void Score::render(){
@@ -980,14 +1105,35 @@ bool Hit_Test(GameProp* obj1, GameProp* obj2){
 
 void Check_Collision(){
 
+	entity refType;													// temp type for comparison
 	
 	// Collision test against Player ---------
 	for(int i=1; i<NUM_OBJECTS; i++){
+	
 		if(object[i] != 0){
-			if(object[i]->getType() != explosion){					// disregard explosion objects
+		
+			// check only objects collide-able with player
+			if((object[i]->collide() == player) || (object[i]->collide() == all)){
+			
 				if(Hit_Test(object[0], object[i])){
-					score->updateLife(-10);
-					object[i]->kill();						
+				
+					refType = object[i]->getType();
+					
+					switch(refType){
+					
+						case balloonB:
+							score->getBomb();			
+							break;
+							
+						case enemy:
+							score->updateScore(20);
+							break;
+					
+						//case bullet:
+						default:		break;
+					}					
+					score->updateLife(object[i]->getDamage());
+					object[i]->kill();
 				}
 			}
 		}
@@ -997,16 +1143,21 @@ void Check_Collision(){
 	for(int i = 1; i < (NUM_OBJECTS-1); i++){
 	
 		if(object[i] != 0){											// skip check with NULL pointers
-		
-			if(object[i]->getType() != explosion){					// disregard explosion objects
+	
+			// check only objects collide-able with each other
+			if(object[i]->collide() == all){					
 		
 				for(int j = i+1; j < NUM_OBJECTS; j++){
 				
 					if(object[j] != 0){								// skip check with NULL pointers
 					
-						if(object[j]->getType() != explosion){		// disregard explosion objects
+						// check only objects collide-able with each other
+						if(object[j]->collide() == all){	
 					
 							if(Hit_Test(object[i], object[j])){
+								if((object[i]->getType() == enemy) != (object[j]->getType() == enemy)){
+									score->updateScore(20);
+								}
 								object[i]->kill();
 								object[j]->kill();
 							}
@@ -1024,39 +1175,13 @@ void Check_Collision(){
 
 void Collect_Dead(){
 
-	entity objectType;
-
 	for(int i = 0; i < NUM_OBJECTS; i++){
 	
 		if(object[i] != 0){
 		
 			if(object[i]->isDead()){
-				
-				objectType = object[i]->getType();
-				
-				switch(objectType){
-				
-					case player:
-						delete object[i];
-						object[i] = 0;
-						break;
-				
-					case enemy:
-						score->updateScore(20);
-						delete object[i];
-						object[i] = 0;
-						break;
-				
-					case bullet:
-					case explosion:
-						delete object[i];
-						object[i] = 0;
-						break;
-				
-					default:
-						Draw_Text(20, 50, 3, "Error: Collect_Dead();");
-						break;
-				}
+				delete object[i];
+				object[i] = 0;
 			}
 		}
 	}
@@ -1067,7 +1192,44 @@ void Collect_Dead(){
 
 void Spawn_Enemy(){
 
-	// count enemies first
+	// spawn friendly support -------------
+	static int bombCoolDown = 0;
+	static int healthCoolDown = 0;
+	
+	// Health balloons
+	if(healthCoolDown <= 0){
+		if((rand()%100) < (100 - score->getLife())){
+			for(int i = 0; i<NUM_OBJECTS; i++){
+				if(object[i] == 0){
+					object[i] = new Balloon(i, balloonH);
+					break;
+				}
+			}
+			healthCoolDown = 1800;
+		}
+	}
+	else{
+		healthCoolDown--;
+	}
+	
+	// Bomb balloons
+	if(bombCoolDown <= 0){
+		if((rand()%100) < (100 - score->getLife())){
+			for(int i = 0; i<NUM_OBJECTS; i++){
+				if(object[i] == 0){
+					object[i] = new Balloon(i, balloonB);
+					break;
+				}
+			}
+			bombCoolDown = 1800;
+		}
+	}
+	else{
+		bombCoolDown--;
+	}	
+	
+
+	// count enemies ----------------------
 	int tempCounter = 0;
 	
 	for(int i = 0; i<NUM_OBJECTS; i++){
@@ -1075,8 +1237,8 @@ void Spawn_Enemy(){
 			tempCounter++;
 		}	
 	}	
-	
-	// compare with difficulty and top up
+
+	// compare with difficulty and TopUp --
 	while(tempCounter < difficulty){
 		for(int i = 0; i<NUM_OBJECTS; i++){
 			if(object[i] == 0){
@@ -1092,7 +1254,7 @@ void Spawn_Enemy(){
 
 void Play_Game(){
 
-	srand((unsigned)frameCounter);		// seed rand()
+	srand((unsigned)frameCounter);			// seed rand()
 
 	Time* time = new Time();
 	
@@ -1102,7 +1264,6 @@ void Play_Game(){
 
 	object[0] = new Player(0,8,32);
 	Spawn_Enemy();
-	//object[1] = new Enemy(1);
 	
 	//time->setTime(0, 0, 99);				//test values
 	time->drawTime();

@@ -21,8 +21,8 @@
 
 // ENUMERATION ------------------------------------------------------
 
-enum entity {player, enemy, bullet, explosion};
-
+enum entity {myPlane, balloonH, balloonB, enemy, bullet, explosion};
+enum physics{none, player, all};
 
 // STRUCTURES -------------------------------------------------------
 
@@ -52,6 +52,9 @@ class GameProp {
 		void kill();
 		entity getType();
 		
+		physics collide();		
+		
+		int getDamage();		
 		
 		virtual void update() = 0;
 		
@@ -70,6 +73,8 @@ class GameProp {
 		int objNumber;
 		int width;
 		int height;
+		int damage;
+		physics collision;
 };
 
 
@@ -77,7 +82,7 @@ class GameProp {
 
 class Player : public GameProp{
 
-		int coolDown = 0;
+		int coolDown;
 
 	public:
 	
@@ -90,6 +95,24 @@ class Player : public GameProp{
 		void shoot();
 
 };
+
+
+// BALLOON -------------
+
+class Balloon : public GameProp{
+
+		int speedY;
+		
+	public:
+
+		Balloon(int id, entity e);
+		
+		void update();
+				
+	private:
+
+};
+
 
 // ENEMY -------------
 
@@ -130,9 +153,9 @@ class Bullet : public GameProp{
 
 class Explosion : public GameProp{
 		
-		bool freeFall = true;						// true if Explosion is in free fall
+		bool freeFall;						// true if Explosion is in free fall
 		int speedX;
-		int counter = 0;
+		int counter;
 		const int TILES[24] = {160, 162, 164, 166, 168, 170, 172, 174, 192, 194, 196, 198, 200, 202, 204, 206, 224, 226, 228, 230, 232, 234, 236, 238};
 
 	public:
@@ -150,13 +173,15 @@ class Explosion : public GameProp{
 
 class Time {
 		
-		int frames = 0;								// 60/second
-		int seconds = 0;
-		int minutes = 0;
+		int frames;								// 60/second
+		int seconds;
+		int minutes;
 		
 		char buffer[20];
 
 	public:
+	
+		Time();
 	
 		void setTime(int f, int s, int m);			// initialize time
 		
@@ -173,15 +198,24 @@ class Time {
 
 class Score {
 		
-		int life = 100;
-		int skill = 1;
-		int score = 0;
+		int life;
+		int skill;
+		int score;
+		bool carryBomb;
 
 	public:
+	
+		Score();
+		
+		int getLife();
 		
 		void updateLife(int k);		
 		void updateSkill(int k);
 		void updateScore(int k);
+		
+		bool hasBomb();
+		void getBomb();
+		void dropBomb();
 		
 		void render();
 
