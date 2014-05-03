@@ -1108,32 +1108,36 @@ void Check_Collision(){
 	entity refType;													// temp type for comparison
 	
 	// Collision test against Player ---------
-	for(int i=1; i<NUM_OBJECTS; i++){
 	
-		if(object[i] != 0){
+	if(object[0] != 0){												// if player is alive
+	
+		for(int i=1; i<NUM_OBJECTS; i++){
 		
-			// check only objects collide-able with player
-			if((object[i]->collide() == player) || (object[i]->collide() == all)){
+			if(object[i] != 0){										// skip check with NULL pointers
 			
-				if(Hit_Test(object[0], object[i])){
+				// check only objects collide-able with player
+				if((object[i]->collide() == player) || (object[i]->collide() == all)){
 				
-					refType = object[i]->getType();
+					if(Hit_Test(object[0], object[i])){
 					
-					switch(refType){
-					
-						case balloonB:
-							score->getBomb();			
-							break;
-							
-						case enemy:
-							score->updateScore(20);
-							break;
-					
-						//case bullet:
-						default:		break;
-					}					
-					score->updateLife(object[i]->getDamage());
-					object[i]->kill();
+						refType = object[i]->getType();
+						
+						switch(refType){
+						
+							case balloonB:
+								score->getBomb();			
+								break;
+								
+							case enemy:
+								score->updateScore(20);
+								break;
+						
+							//case bullet:
+							default:		break;
+						}					
+						score->updateLife(object[i]->getDamage());
+						object[i]->kill();
+					}
 				}
 			}
 		}
@@ -1277,7 +1281,9 @@ void Play_Game(){
 		frameCounter++;
 		
 		// UPDATE ------------------
-		time->update();
+		if(object[0] != 0){												// if player is alive
+			time->update();
+		}
 
 		for(int i = 0; i < NUM_OBJECTS; i++){
 			if(object[i] != 0){
@@ -1290,12 +1296,20 @@ void Play_Game(){
 		Check_Collision();
 		
 		
+		// PLAYER LIFE CHECK -------
+		if(score->getLife() == 0){
+			object[0]->kill();
+		}
+		
+		
 		// GARBAGE COLLECTION ------
 		Collect_Dead();
 		
 
 		// SPAWN NEW ENEMIES -------
-		Spawn_Enemy();
+		if(object[0] != 0){												// if player is alive
+			Spawn_Enemy();
+		}
 		
 		
 		// RENDER ------------------
