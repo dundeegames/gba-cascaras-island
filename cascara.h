@@ -208,6 +208,8 @@ class Score {
 	
 		Score();
 		
+		void setScore(int li, int sk, int sc);
+		
 		int getLife();
 		
 		void updateLife(int k);		
@@ -279,6 +281,10 @@ void Collect_Dead();
 
 void Spawn_Enemy();
 
+bool screenIsEmpty();
+
+void Draw_GameOver(int x, int y, bool visible);
+
 // The entry point for the game
 void Play_Game();
 
@@ -299,6 +305,8 @@ extern GameProp* object[NUM_OBJECTS];
 extern Time* time;
 
 extern Score* score;
+
+extern bool gameRunning;
 
 extern int difficulty;				// value 1 or more = to number of enemies spawned at the same time
 

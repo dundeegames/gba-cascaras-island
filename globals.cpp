@@ -15,3 +15,5 @@ Time* time = new Time();
 Score* score = new Score();
 
 int difficulty = 3;				// value 1 or more = to number of enemies spawned at the same time
+
+bool gameRunning = true;

@@ -23,8 +23,7 @@
 #include "gba.h"
 #include "font.h"
 
-// ADAM'S FUNCTIONS ================================================================================
-
+// ADAM'S FUNCTION =================================================================================
 
 // Set a tile entry within a (32x32) screenblock ------------------------------
 static inline void OrTile(int screenblock, int x, int y, int tile_flags)
@@ -38,9 +37,9 @@ static inline void OrTile(int screenblock, int x, int y, int tile_flags)
 
 void LoadCompressedText();
 
+
+
 // JIRI'S FUNCTIONS ================================================================================
-
-
 
 // Copy a tile entry from a (32x32) screenblock1 to (32x32) screenblock2.
 static inline void CopyTile(int screenblock1, int x1, int y1, int screenblock2, int x2, int y2)
@@ -56,6 +55,7 @@ static inline int MoveTile(int screenblock1, int x1, int y1, int screenblock2, i
 }
 
 // Custom function to overwrite artefact pixels on bottom menu
+// not needed since last charblock update
 static inline void FixTile8(int charblock, int tile_num)
 {
 	volatile uint16_t *dest = REG_VIDEO_BASE + (charblock * 8192) + (tile_num * 32);
@@ -67,7 +67,7 @@ static inline void FixTile8(int charblock, int tile_num)
 
 // ---------------------------------------------------
 
-//SetObjectTile(object, ATTR2_ID8(tile))
+//SetObjectTile(object, ATTR2_ID8(tile)| ATTR2_PRIO(priority))
 static inline void SetObjectTile(int object, uint16_t attr2)
 {
 	ObjAttr& obj(ObjBuffer[object]);

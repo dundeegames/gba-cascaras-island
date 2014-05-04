@@ -416,6 +416,13 @@ Score::Score(){
 	carryBomb = true;
 }
 
+void Score::setScore(int li, int sk, int sc){
+	life = li;
+	skill = sk;
+	score = sc;
+
+}
+
 int Score::getLife(){
 	return life;
 }
@@ -973,32 +980,14 @@ void Play_Intro(){			// Play logo and sets menu
 					}
 
 					if ((BG1Y_offset == 4) && (BG2Y_offset == 4)){
-					
-						 
-						// Doesn't work after playing with BG priorities ---
-							// Move bottom menu from SB29 to SB30
-							for (int y = 18; y < 21; ++y) {
-								for (int x = 0; x < 32; ++x) {
-									MoveTile(29, x, y, 30, x, y);
-								}
-							}
-						// --------------------------------------------------
-						
-						/*
-						// set bottom menu in BG1 -------------------------
+
+						// Move bottom menu from SB29 to SB30
 						for (int y = 18; y < 21; ++y) {
 							for (int x = 0; x < 32; ++x) {
-								SetTile(30, x, y, menuSB[(y*32)+x]);
+								MoveTile(29, x, y, 30, x, y);
 							}
 						}
-						
-						// Clear and reset BG2 ----------------------------
-						for (int y = 18; y < 21; ++y) {
-							for (int x = 0; x < 32; ++x) {
-								SetTile(29, x, y, 0);
-							}
-						}
-						*/
+
 						BG2Y_offset = 0;
 						REG_BG2VOFS = BG2Y_offset;
 						
@@ -1316,10 +1305,61 @@ void Spawn_Enemy(){
 	}
 	
 }
+
+
+// ----------------------------------------------------------------------------
+
+bool screenIsEmpty(){
+
+	bool x = true;
+	int counter = 0;
+	
+	for(int i = 0; i<NUM_OBJECTS; i++){
+		if(object[i] != 0){
+			counter++;
+		}	
+	}
+
+	if(counter != 0){
+		x = false;
+	}
+
+	return x;
+}
+
+
+// ----------------------------------------------------------------------------
+
+void Draw_GameOver(int x, int y, bool visible){
+
+	if(visible){
+		for(int i=0; i<12; i++){
+			SetTile(30, (x+i), y, (4+i));
+			SetTile(30, (x+i), (y+1), (20+i));
+		}
+	}
+	else{
+		for(int i=0; i<12; i++){
+			SetTile(30, (x+i), y, 0);
+			SetTile(30, (x+i), (y+1), 0);
+		}	
+	}
+}
+
+
+
 // ----------------------------------------------------------------------------
 
 void Play_Game(){
 
+	bool inGame = true;
+
+	enum gameState {play, gameOver, victory, end};
+	
+	gameState state = play;
+	bool playSelect = true;
+	
+	
 	srand((unsigned)frameCounter);			// seed rand()
 
 	for(int i = 0; i<NUM_OBJECTS; i++){		// initialize all object addresses to 0
@@ -1336,56 +1376,138 @@ void Play_Game(){
 	REG_BG0VOFS = 4;	
 
 
-	while(true){
+	while(inGame){
 	
 		frameCounter++;
 		
-		if (Key_Pressed(KEY_SELECT)){
-			Pause_Game();		
-		}		
+		switch(state){
 		
+			case play:
 		
-		// UPDATE ------------------
-		if(object[0] != 0){												// if player is alive
-			time->update();
-		}
+				if (Key_Pressed(KEY_SELECT)){
+					Pause_Game();		
+				}		
+				
+				// UPDATE ------------------
+				if(object[0] != 0){												// if player is alive
+					time->update();
+				}
 
-		for(int i = 0; i < NUM_OBJECTS; i++){
-			if(object[i] != 0){
-				object[i]->update();
-			}
-		}
+				for(int i = 0; i < NUM_OBJECTS; i++){
+					if(object[i] != 0){
+						object[i]->update();
+					}
+				}
 
-		
-		// COLLISION ---------------
-		Check_Collision();
-		
-		
-		// PLAYER LIFE CHECK -------
-		if(score->getLife() == 0){
-			object[0]->kill();
-		}
-		
-		
-		// GARBAGE COLLECTION ------
-		Collect_Dead();
-		
+				// COLLISION ---------------
+				Check_Collision();
+				
+				// PLAYER LIFE CHECK -------
+				if(score->getLife() == 0){
+					object[0]->kill();
+				}
+				
+				// GARBAGE COLLECTION ------
+				Collect_Dead();
 
-		// SPAWN NEW ENEMIES -------
-		if(object[0] != 0){												// if player is alive
-			Spawn_Enemy();
-		}
-		
-		
-		// RENDER ------------------
-		for(int i = 0; i < NUM_OBJECTS; i++){
-			if(object[i] != 0){
-				object[i]->render();
-			}
-		}
-		
-		time->drawTime();
-		score->render();
+				// SPAWN NEW ENEMIES -------
+				if(object[0] != 0){												// if player is alive
+					Spawn_Enemy();
+				}
+				
+				// RENDER ------------------
+				for(int i = 0; i < NUM_OBJECTS; i++){
+					if(object[i] != 0){
+						object[i]->render();
+					}
+				}
+				
+				// CHANGE STATE ------------
+				if(object[0] == 0){												// if player is dead
+					if(screenIsEmpty()){
+						Draw_GameOver(8, 8, true);
+						time->hide();
+						score->hide();
+						REG_BG0VOFS = 0;						
+						state = gameOver;
+					}
+				}
+				
+				if(state == play){
+					time->drawTime();
+					score->render();
+				}
+				break;
+				
+			case gameOver:
+			
+				if (playSelect) {
+					Draw_Button(8, 13, true, "PLAY");
+					Draw_Button(17, 13, false, "EXIT");
+				}
+				else {
+					Draw_Button(8, 13, false, "PLAY");
+					Draw_Button(17, 13, true, "EXIT");
+				}
+
+				// Check user input
+				if (Key_Pressed(KEY_RIGHT) && (playSelect == true)){
+					 playSelect = false;
+				}
+				
+				else if (Key_Pressed(KEY_LEFT) && (playSelect == false)){
+					playSelect = true;
+				}
+			
+				if (Key_Pressed(KEY_START)){
+					Draw_GameOver(8, 8, false);
+				
+					Clear_Button(8, 13, "PLAY");
+					Clear_Button(17, 13, "EXIT");
+					
+					BG1Y_offset = 4;					// slide top menu down
+					REG_BG1VOFS = BG1Y_offset;	
+					BG2Y_offset = 4;					// slide bottom menu up
+					REG_BG2VOFS = BG2Y_offset;
+					
+					// Move bottom menu from SB30 to SB29
+					for (int y = 18; y < 21; ++y) {
+						for (int x = 0; x < 32; ++x) {
+							MoveTile(30, x, y, 29, x, y);
+						}
+					}
+					
+					
+					if(playSelect){
+						time->setTime(0, 0, 0);
+						score->setScore(100, 1, 0);
+						state = end;
+					}
+					else{
+						gameRunning = false;
+						state = end;
+					}
+				}			
+				break;
+				
+			case end:
+				if(!(frameCounter%3)){
+					if(BG1Y_offset < 24){
+						BG1Y_offset++;					// slide top menu down
+						REG_BG1VOFS = BG1Y_offset;					
+					}
+					if(BG2Y_offset > -16){
+						BG2Y_offset--;					// slide bottom menu up
+						REG_BG2VOFS = BG2Y_offset;					
+					}
+
+					if ((BG1Y_offset == 24) && (BG2Y_offset == -16)){
+						inGame = false;
+					}
+				}
+				break;
+
+		} // end of switch
 
 		
 		// SYSTEM ------------------
@@ -1400,9 +1522,7 @@ void Play_Game(){
 	} // end of while ---
 
 	
-	// release all memory ---------------
-	delete time;
-	delete score;
+
 	
 	for(int i = 0; i < NUM_OBJECTS; i++){
 		if(object[i] != 0){
