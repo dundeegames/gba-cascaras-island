@@ -18,7 +18,7 @@ GameProp::GameProp(int id, entity e, int x, int y, int w, int h, int shape, int 
 	SetObject(objNumber,
 	  ATTR0_SHAPE(shape) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(coord.Y),
 	  ATTR1_SIZE(size) | ATTR1_X(coord.X),
-	  ATTR2_ID8(tile));
+	  ATTR2_ID8(tile) | ATTR2_PRIO(2));
 	
 }
 
@@ -86,7 +86,7 @@ GameProp::~GameProp(){											// set to 1x1 empty tile with X,Y out of screen
 	SetObject(objNumber,
 		  ATTR0_SHAPE(0) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(190),
 		  ATTR1_SIZE(0) | ATTR1_X(250),
-		  ATTR2_ID8(39));
+		  ATTR2_ID8(39) | ATTR2_PRIO(2));
 }
 
 // PLAYER ---------------------------------------------------------------------
@@ -160,7 +160,7 @@ Balloon::Balloon(int id, entity e) :	GameProp(id, e, (rand()%50)+250, (rand()%84
 	collision = player;
 	if(e == balloonB){
 		damage = 0;
-		SetObjectTile(id, ATTR2_ID8(141));
+		SetObjectTile(id, ATTR2_ID8(141) | ATTR2_PRIO(2));
 	}
 	else{
 		damage = -30;
@@ -323,7 +323,7 @@ void Explosion::update(){
 			if(counter < 23){
 				counter++;
 				tempTile = TILES[counter];
-				SetObjectTile(objNumber, ATTR2_ID8(tempTile));
+				SetObjectTile(objNumber, ATTR2_ID8(tempTile) | ATTR2_PRIO(2));
 			}
 			else{
 				kill();
@@ -336,7 +336,7 @@ void Explosion::update(){
 				SetObject(objNumber,
 				  ATTR0_SHAPE(2) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(coord.Y),
 				  ATTR1_SIZE(2) | ATTR1_X(coord.X),
-				  ATTR2_ID8(110));
+				  ATTR2_ID8(110) | ATTR2_PRIO(2));
 				  
 				freeFall = false;
 				counter = 0;			// reset counter
@@ -402,6 +402,10 @@ void Time::drawTime(){
 	Draw_Text(15, 1, 0, buffer);
 }
 
+void Time::hide(){
+	Clear_Text(15, 1, "TIME: 00:00:00");
+}
+
 
 // SCORE ----------------------------------------------------------------------
 
@@ -434,12 +438,12 @@ bool Score::hasBomb(){
 }
 
 void Score::getBomb(){
-	SetObjectTile(0, ATTR2_ID8(0));		// update player's sprite (not sure about close coupling)
+	SetObjectTile(0, ATTR2_ID8(0) | ATTR2_PRIO(2));		// update player's sprite (not sure about close coupling)
 	carryBomb = true;
 }
 
 void Score::dropBomb(){
-	SetObjectTile(0, ATTR2_ID8(4));		// update player's sprite (not sure about close coupling)
+	SetObjectTile(0, ATTR2_ID8(4) | ATTR2_PRIO(2));		// update player's sprite (not sure about close coupling)
 	carryBomb = false;
 }
 
@@ -447,6 +451,12 @@ void Score::render(){
 	drawScore();
 	drawLife();
 	drawSkill();
+}
+
+void Score::hide(){
+	Clear_Text(1, 1, "SCORE:     ");
+	Clear_Text(1, 19, "LIFE:    ");
+	Clear_Text(15, 19, "SKILL:    /100");
 }
 
 void Score::drawScore(){
@@ -729,23 +739,26 @@ void Set_Background(){
 	REG_DISPCNT = DCNT_MODE0 | DCNT_OBJ | DCNT_BG0 | DCNT_BG1| DCNT_BG2 | DCNT_BG3 ;
 	
 	// Set background 3 options.
-	REG_BG3CNT = BG_CBB(1) | BG_SBB(28) | BG_8BPP | BG_REG_32x32;			// sea background
+	//REG_BG3CNT = BG_CBB(1) | BG_SBB(28) | BG_8BPP | BG_REG_32x32;			// sea background
+	REG_BG3CNT = BG_CBB(1) | BG_SBB(28) | BG_8BPP | BG_PRIO(2) | BG_REG_32x32;			// sea background
 	REG_BG3HOFS = 0;
 	REG_BG3VOFS = 0;
 	
 	// Set background 2 options.
-	REG_BG2CNT = BG_CBB(1) | BG_SBB(29) | BG_8BPP | BG_REG_32x32;			// land background
+	//REG_BG2CNT = BG_CBB(1) | BG_SBB(29) | BG_8BPP | BG_REG_32x32;			// land background
+	REG_BG2CNT = BG_CBB(1) | BG_SBB(29) | BG_8BPP | BG_PRIO(2) | BG_REG_32x32;			// land background
 	REG_BG2HOFS = 0;
 	REG_BG2VOFS = BG2Y_offset;
 	
 	// Set background 1 options.
-	REG_BG1CNT = BG_CBB(1) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;			// menu layer
+	//REG_BG1CNT = BG_CBB(1) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;			// menu layer
+	REG_BG1CNT = BG_CBB(1) | BG_SBB(30) | BG_8BPP | BG_PRIO(1) | BG_REG_32x32;			// menu layer
 	REG_BG1HOFS = 0;
 	REG_BG1VOFS = BG1Y_offset;
 	
 	// Set background 0 options.
-	//REG_BG0CNT = BG_CBB(0) | BG_SBB(31) | BG_8BPP | BG_REG_32x32;			// text layer
-	REG_BG0CNT = BG_CBB(0) | BG_SBB(31) | BG_4BPP | BG_REG_32x32;			// text layer
+	//REG_BG0CNT = BG_CBB(0) | BG_SBB(31) | BG_4BPP | BG_REG_32x32;			// text layer
+	REG_BG0CNT = BG_CBB(0) | BG_SBB(31) | BG_4BPP | BG_PRIO(0) | BG_REG_32x32;			// text layer
 	REG_BG0HOFS = 0;
 	REG_BG0VOFS = 0;
 	
@@ -961,14 +974,32 @@ void Play_Intro(){			// Play logo and sets menu
 
 					if ((BG1Y_offset == 4) && (BG2Y_offset == 4)){
 					
-						// Move bottom menu from SB29 to SB30-------------------------------
+						 
+						// Doesn't work after playing with BG priorities ---
+							// Move bottom menu from SB29 to SB30
+							for (int y = 18; y < 21; ++y) {
+								for (int x = 0; x < 32; ++x) {
+									MoveTile(29, x, y, 30, x, y);
+								}
+							}
+						// --------------------------------------------------
+						
+						/*
+						// set bottom menu in BG1 -------------------------
 						for (int y = 18; y < 21; ++y) {
 							for (int x = 0; x < 32; ++x) {
-								MoveTile(29, x, y, 30, x, y);
+								SetTile(30, x, y, menuSB[(y*32)+x]);
 							}
 						}
 						
-						BG2Y_offset = 0;				// reset BG2
+						// Clear and reset BG2 ----------------------------
+						for (int y = 18; y < 21; ++y) {
+							for (int x = 0; x < 32; ++x) {
+								SetTile(29, x, y, 0);
+							}
+						}
+						*/
+						BG2Y_offset = 0;
 						REG_BG2VOFS = BG2Y_offset;
 						
 						// Change objects to (fake) play characters and update Charbolock and Palette
@@ -976,7 +1007,9 @@ void Play_Intro(){			// Play logo and sets menu
 						  ATTR0_SHAPE(1) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
 						  ATTR1_SIZE(2) | ATTR1_X(planeX),
 						  ATTR2_ID8(0));
-						  
+						
+
+						// dummy used to rewrite the right half of logo object
 						SetObject(1,
 						  ATTR0_SHAPE(1) | ATTR0_8BPP | ATTR0_REG | ATTR0_Y(32),
 						  ATTR1_SIZE(1) | ATTR1_X(250),
@@ -1091,6 +1124,35 @@ void Play_Intro(){			// Play logo and sets menu
 
 
 // GAME ============================================================================================
+
+void Pause_Game(){
+
+	time->hide();
+	score->hide();
+	
+	REG_BG0VOFS = 0;
+
+	Draw_Text(6, 10, 15, "Press START to return");
+	Draw_Button(12, 13, false, "PAUSE");
+
+	while(true){
+		if (Key_Pressed(KEY_START)){
+			Draw_Button(12, 13, true, "PAUSE");
+			Slow_Time(12);									// wait for MAX/60 seconds
+			break;
+		}	
+	}
+	
+	Clear_Text(6, 10, "Press START to return");
+	Clear_Button(12, 13, "PAUSE");
+	
+	REG_BG0VOFS = 4;
+	
+	time->drawTime();
+	score->render();
+}
+
+// ----------------------------------------------------------------------------
 
 // Collision Detection: returns true if objects collide
 bool Hit_Test(GameProp* obj1, GameProp* obj2){
@@ -1260,8 +1322,6 @@ void Play_Game(){
 
 	srand((unsigned)frameCounter);			// seed rand()
 
-	Time* time = new Time();
-	
 	for(int i = 0; i<NUM_OBJECTS; i++){		// initialize all object addresses to 0
 		object[i] = 0;
 	}
@@ -1279,6 +1339,11 @@ void Play_Game(){
 	while(true){
 	
 		frameCounter++;
+		
+		if (Key_Pressed(KEY_SELECT)){
+			Pause_Game();		
+		}		
+		
 		
 		// UPDATE ------------------
 		if(object[0] != 0){												// if player is alive

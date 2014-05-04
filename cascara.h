@@ -188,6 +188,7 @@ class Time {
 		void update();
 		
 		void drawTime();
+		void hide();
 
 	private:
 
@@ -218,6 +219,7 @@ class Score {
 		void dropBomb();
 		
 		void render();
+		void hide();
 
 	private:
 		
@@ -269,6 +271,8 @@ void Set_Background();
 
 void Play_Intro();
 
+void Pause_Game();
+
 void Check_Collision();
 
 void Collect_Dead();
@@ -291,6 +295,8 @@ extern int BG1Y_offset;
 extern int frameCounter;
 
 extern GameProp* object[NUM_OBJECTS];
+
+extern Time* time;
 
 extern Score* score;
 
