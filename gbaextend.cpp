@@ -4,7 +4,15 @@
 **           Extension of GBA development library for AG0700            **
 **                                                                      **
 **    Created by:			Jiri Klic			2014                    **
+**                                                                      **
+**    Contributors:         Adam Sampson	    2014                    **
 **                          Stefano Musumeci    2014                    **
+**                                                                      **
+**    ==============================================================    **
+**    Note:                                                             **
+**         32-bit version of regular functions are not used in code     **
+**         at the moment, but were developed for future experiment      **
+**         with hopes of hardware performance improvement.              **
 **                                                                      **
 **    ==============================================================    **
 **                                                                      **
@@ -19,7 +27,7 @@
 
 // ADAM'S TEXT =====================================================================================
 
-/*
+// Found another way around, i.e. cascara.cpp line818, function kept for future use
 void DrawText(int x, int y, const char string[]){
 
 	int i = 0;
@@ -29,11 +37,6 @@ void DrawText(int x, int y, const char string[]){
 		i++;
 	}
 }
-
-
-// ---------------------------------------------------------
-
-*/
 
 
 // STEFANO'S TEXT =================================================================================
@@ -55,8 +58,7 @@ void DrawText(int x, int y, const char string[]){
 */
 
 
-// derived function:
-
+// my derived function:
 void LoadCompressedText(){				// works only in | BG_4BPP |
 
 	for(char c = 0; c < 128; c++){
@@ -85,91 +87,3 @@ void CopyToVRAM32(volatile uint32_t *dest, const uint32_t *src, int num_words)	/
 		*dest++ = *src++;
 	}
 }
-
-
-
-
-
-
-
-
-// ----------------------------------------------------------------------------
-
-/*
-// JIRI'S NOTES ====================================================================================
-
-
-
-
-// ----------------------------------------------------------------------------
-a[i]
-*(a + i)
-
-int *p;
-*p
-p[0]
-
-int x;
-
-char x[24];
-
-
-x += y	// take x+y and assign it to x
-x |= y	// take x|y (bitwise OR) and assign it to x
-
-// ----------------------------------------------------------------------------
-
-// MAX'S NOTES =====================================================================================================================================================================
-
-void LoadStartFrame(uint16_t frame)
-{
-	bool screenLoop = false;
-	uint16_t endOfGraphic, startOfGraphic;
-	// Title image scrolling
-	for(uint16_t i = 0; i < SCREEN_HEIGHT; i++)
-	{
-		
-		endOfGraphic = frame*2 + SCREEN_WIDTH;
-		startOfGraphic = SCREEN_WIDTH - (endOfGraphic % (SCREEN_WIDTH*2));
-		screenLoop = (endOfGraphic > (SCREEN_WIDTH*2)) ? true : false;
-		if(!screenLoop)
-		{
-			memcpy((void*)&BackBuffer[i * SCREEN_WIDTH / 2], &TitleScreenBackgroundBitmap[frame + i * SCREEN_WIDTH], SCREEN_WIDTH);
-		} else {
-			memcpy((void*)&BackBuffer[i * SCREEN_WIDTH / 2], &TitleScreenBackgroundBitmap[frame + i * SCREEN_WIDTH], startOfGraphic);
-			memcpy((void*)&BackBuffer[(i * SCREEN_WIDTH / 2) + (startOfGraphic / 2)], &TitleScreenBackgroundBitmap[i * SCREEN_WIDTH], SCREEN_WIDTH - startOfGraphic);
-		}
-	}
-	// Title text
-	for(uint16_t i = 0; i < SCREEN_HEIGHT * SCREEN_WIDTH / 4; i++)
-	{
-		if(TitleScreenTextBitmap[i] != 0x0000)
-			BackBuffer[i] = TitleScreenTextBitmap[i];
-	}
-}
-
-void StartGame()
-{
-	uint16_t frameCounter = 0;
-	LoadStartPal();
-	LoadStartFrame(frameCounter);
-	REG_DISPCNT = MODE4	| DCNT_BG2;
-	while(true)
-	{
-		frameCounter++;
-		frameCounter = frameCounter % SCREEN_WIDTH;
-		LoadStartFrame(frameCounter);
-		FlipBuffers();
-		// Start game if start is pressed
-		if((REG_KEYINPUT & KEY_START) == 0)
-		{
-			Game = Main;
-			break;
-		}
-	}
-}
-
-
-*/
-
-// ------------------------------------------------------------------------------------------------------

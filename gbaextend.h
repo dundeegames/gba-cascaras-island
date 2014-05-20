@@ -5,7 +5,15 @@
 **                     based on:  gba.h by eloist 		                **
 **                                                                      **
 **    Created by:			Jiri Klic			2014                    **
+**                                                                      **
+**    Contributors:         Adam Sampson	    2014                    **
 **                          Stefano Musumeci    2014                    **
+**                                                                      **
+**    ==============================================================    **
+**    Note:                                                             **
+**         32-bit version of regular functions are not used in code     **
+**         at the moment, but were developed for future experiment      **
+**         with hopes of hardware performance improvement.              **
 **                                                                      **
 **    ==============================================================    **
 **                                                                      **
@@ -25,7 +33,8 @@
 
 // ADAM'S FUNCTION =================================================================================
 
-// Set a tile entry within a (32x32) screenblock ------------------------------
+
+// Found another way around, i.e. cascara.cpp line818, function kept for future use
 static inline void OrTile(int screenblock, int x, int y, int tile_flags)
 {
 	REG_VIDEO_BASE[(screenblock * 1024) + (y * 32) + x] |= tile_flags;
@@ -75,75 +84,6 @@ static inline void SetObjectTile(int object, uint16_t attr2)
 }
 
 
-
-
-/*
-// Set all of an object's attributes at once.
-static inline void SetObject(int object, uint16_t attr0, uint16_t attr1, uint16_t attr2)
-{
-	ObjAttr& obj(ObjBuffer[object]);
-	obj.attr0 = attr0;
-	obj.attr1 = attr1;
-	obj.attr2 = attr2;
-}
-
-// Set an object's X position.
-static inline void SetObjectX(int object, int x)
-{
-	ObjAttr& obj(ObjBuffer[object]);
-	obj.attr1 = (obj.attr1 & ~ATTR1_X_MASK) | ATTR1_X(x);
-}
-
-// Set an object's Y position.
-static inline void SetObjectY(int object, int y)
-{
-	ObjAttr& obj(ObjBuffer[object]);
-	obj.attr0 = (obj.attr0 & ~ATTR0_Y_MASK) | ATTR0_Y(y);
-}
-*/
-
-// ---------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-// Load an 8bpp tile into video RAM.
-static inline void LoadTile8(int charblock, int tile_num, const uint8_t tile_data[64])
-{
-	CopyToVRAM(REG_VIDEO_BASE + (charblock * 8192) + (tile_num * 32), (const uint16_t *) tile_data, 32);
-}
-
-void CopyToVRAM(volatile uint16_t *dest, const uint16_t *src, int num_words)
-{
-	while (num_words-- > 0)
-	{
-		*dest++ = *src++;
-	}
-}
-
-
-*/
-
-
-
 // 32-bit FUNCTIONS --------------------------------------------------------------------------------
 
 // Copy data into video RAM, 32 bits at a time.
@@ -151,10 +91,6 @@ void CopyToVRAM32(volatile uint32_t *dest, const uint32_t *src, int num_words);
 
 
 // INLINE FUNCTIONS --------------------------------------------------------------------------------
-
-
-
-
 
 // Load the entire background palette from an array.
 static inline void LoadPaletteBG32(const uint32_t palette_data[128])
@@ -168,6 +104,7 @@ static inline void LoadPaletteBG32(const uint32_t palette_data[128])
 // LoadPaletteObj 32-bit version ----------------------------------------------
 
 // Load the entire object palette from an array.
+
 static inline void LoadPaletteObj32(const uint32_t palette_data[128])
 {
 	volatile uint32_t *p = (volatile uint32_t *) REG_PALETTE_OBJ;
@@ -178,6 +115,7 @@ static inline void LoadPaletteObj32(const uint32_t palette_data[128])
 
 
 // LoadTileData 32-bit version ------------------------------------------------
+
 // Load a variable amount of tile data from an array,
 // storing it in charblock memory starting at the given position. data_bytes is the length of the data in bytes.
 static inline void LoadTileData32(int charblock, int first_tile, const void *data, int data_bytes)

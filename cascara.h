@@ -306,7 +306,7 @@ extern Time* time;
 
 extern Score* score;
 
-extern bool gameRunning;
+//extern bool gameRunning;
 
 extern int difficulty;				// value 1 or more = to number of enemies spawned at the same time
 

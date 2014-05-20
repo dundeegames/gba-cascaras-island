@@ -1,4 +1,15 @@
+/*
+**************************************************************************
+**                                                                      **
+**                    Cascara's Island for GBA, 2014                    **
+**                    			by Jiri Klic	                        **
+**                                                                      **
+**************************************************************************
+*/
+
+
 #include "cascara.h"			// my header
+
 
 // CLASS FUNCTIONS =================================================================================
 
@@ -169,16 +180,11 @@ Balloon::Balloon(int id, entity e) :	GameProp(id, e, (rand()%50)+250, (rand()%84
 
 void Balloon::update(){
 
-	int tempVar;
+	//int tempVar;
 
 	if(!(frameCounter%60)){		// randomly choose vertical speed every 60f
-	
-		tempVar = rand()%3;
-		switch(tempVar){
-			case 0:		speedY = -1;	break;
-			case 1:		speedY = 0;		break;
-			case 2:		speedY = 1;		break;		
-		}
+
+		speedY = (rand()%3) - 1;
 	}
 
 	coord.X--;
@@ -774,12 +780,19 @@ void Set_Background(){
 	//LoadPaletteBG(charblock1Pal);
 	LoadPaletteBG(charblockPal);
 
+	for(int i = 0; i<256; i++){
+		LoadTile8(0, i, blank_tile);
+		LoadTile8(1, i, blank_tile);
+	}
+	
+	
+	
 	//LoadTileData(1, 0, charblock1Tiles, sizeof charblock1Tiles);
 	LoadTileData(1, 0, charblockTiles, sizeof charblockTiles);	
 	LoadTile8(1, 0, blank_tile);			// Load blank_tile into charblock - 1 / tile - 0
 
 	/*
-	// Bug fix the artefact pixels
+	// Bug fix the artefact pixels (not needed since last sprite sheet update)
 	FixTile8(1, 160);
 	FixTile8(1, 161);
 	FixTile8(1, 170);
@@ -788,11 +801,15 @@ void Set_Background(){
 	
 	// initiate backgrounds -------------------------------------------------------
 	
-	LoadScreenblock(28, seaSB);
+	
+	
+	
+	
 	
 	for (int y = 0; y < 32; ++y){			// Ask about efficiency! Is is OK if it is jumping each loop to 3 different places in memory? Or should I rather create function and execute each SB separately?
 
 		for (int x = 0; x < 32; ++x){
+			SetTile(28, x, y, 0);			// Load blank tiles into SB 28
 			SetTile(29, x, y, 0);			// Load blank tiles into SB 29
 			SetTile(30, x, y, 0);			// Load blank tiles into SB 30
 			SetTile(31, x, y, 0);			// Load blank tiles into SB 31
@@ -800,7 +817,8 @@ void Set_Background(){
 		}
 	}	
 	
-	
+	LoadScreenblock(28, seaSB);
+	LoadCompressedText();
 	//LoadScreenblock(30, menuSB);
 	
 	
@@ -1045,14 +1063,14 @@ void Play_Intro(){			// Play logo and sets menu
 
 				// Check user input
 				if (Key_Pressed(KEY_RIGHT) && startSelect){
-					 startSelect = !startSelect;
+					 startSelect = false;
 				}
 				
 				else if (Key_Pressed(KEY_LEFT) && !startSelect){
-					startSelect = !startSelect;
+					startSelect = true;
 				}
 			
-				if (Key_Pressed(KEY_START)){
+				if (Key_Pressed(KEY_START) || Key_Pressed(KEY_A)){
 					Clear_Text(9, 7, "Choose from");
 					Clear_Text(6, 9, "following options");
 				
@@ -1070,14 +1088,14 @@ void Play_Intro(){			// Play logo and sets menu
 				
 			case about:
 				Draw_Text(6, 4, 5, "Created by Jiri Klic");
-				Draw_Text(6, 6, 5, "@ Abertay, April 2014");
-				Draw_Text(6, 10, 15, "Press SELECT to return");
+				Draw_Text(6, 6, 5, "@ Abertay, May 2014");
+				Draw_Text(6, 10, 15, "Press B to return");
 				
-				Draw_Button(12, 13, false, "SELECT");
+				Draw_Button(12, 13, false, "(B)ACK");
 				
 				// Check user input
-				if (Key_Pressed(KEY_SELECT)){
-					Draw_Button(12, 13, true, "SELECT");
+				if (Key_Pressed(KEY_B)){
+					Draw_Button(12, 13, true, "(B)ACK");
 					Slow_Time(12);									// wait for MAX/60 seconds
 				
 					Clear_Text(6, 4, "Created by Jiri Klic");
@@ -1355,10 +1373,7 @@ void Play_Game(){
 	bool inGame = true;
 
 	enum gameState {play, gameOver, victory, end};
-	
 	gameState state = play;
-	bool playSelect = true;
-	
 	
 	srand((unsigned)frameCounter);			// seed rand()
 
@@ -1425,7 +1440,7 @@ void Play_Game(){
 				// CHANGE STATE ------------
 				if(object[0] == 0){												// if player is dead
 					if(screenIsEmpty()){
-						Draw_GameOver(8, 8, true);
+						Draw_GameOver(9, 8, true);
 						time->hide();
 						score->hide();
 						REG_BG0VOFS = 0;						
@@ -1441,29 +1456,12 @@ void Play_Game(){
 				
 			case gameOver:
 			
-				if (playSelect) {
-					Draw_Button(8, 13, true, "PLAY");
-					Draw_Button(17, 13, false, "EXIT");
-				}
-				else {
-					Draw_Button(8, 13, false, "PLAY");
-					Draw_Button(17, 13, true, "EXIT");
-				}
+				Draw_Button(11, 13, true, "NEW GAME");
 
-				// Check user input
-				if (Key_Pressed(KEY_RIGHT) && (playSelect == true)){
-					 playSelect = false;
-				}
-				
-				else if (Key_Pressed(KEY_LEFT) && (playSelect == false)){
-					playSelect = true;
-				}
-			
 				if (Key_Pressed(KEY_START)){
-					Draw_GameOver(8, 8, false);
+					Draw_GameOver(9, 8, false);
 				
-					Clear_Button(8, 13, "PLAY");
-					Clear_Button(17, 13, "EXIT");
+					Clear_Button(11, 13, "NEW GAME");
 					
 					BG1Y_offset = 4;					// slide top menu down
 					REG_BG1VOFS = BG1Y_offset;	
@@ -1476,17 +1474,10 @@ void Play_Game(){
 							MoveTile(30, x, y, 29, x, y);
 						}
 					}
-					
-					
-					if(playSelect){
-						time->setTime(0, 0, 0);
-						score->setScore(100, 1, 0);
-						state = end;
-					}
-					else{
-						gameRunning = false;
-						state = end;
-					}
+
+					time->setTime(0, 0, 0);
+					score->setScore(100, 1, 0);
+					state = end;
 				}			
 				break;
 				
@@ -1520,8 +1511,6 @@ void Play_Game(){
 		}
 		
 	} // end of while ---
-
-	
 
 	
 	for(int i = 0; i < NUM_OBJECTS; i++){
